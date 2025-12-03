@@ -1,0 +1,323 @@
+import React from 'react'
+import { Document, Page, Text, View, StyleSheet, Font, renderToBuffer } from '@react-pdf/renderer'
+import { format } from 'date-fns'
+import { pt } from 'date-fns/locale'
+
+// Register fonts (optional - using default)
+Font.register({
+  family: 'Inter',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff2' },
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hjp-Ek-_EeA.woff2', fontWeight: 600 },
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hjp-Ek-_EeA.woff2', fontWeight: 700 },
+  ],
+})
+
+const styles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontFamily: 'Inter',
+    fontSize: 11,
+    lineHeight: 1.5,
+  },
+  header: {
+    marginBottom: 30,
+    borderBottomWidth: 2,
+    borderBottomColor: '#14b8a6',
+    paddingBottom: 20,
+  },
+  logo: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: '#14b8a6',
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: '#1f2937',
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  section: {
+    marginBottom: 25,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#14b8a6',
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingBottom: 5,
+  },
+  paragraph: {
+    fontSize: 11,
+    color: '#374151',
+    marginBottom: 8,
+  },
+  messageContainer: {
+    marginBottom: 12,
+  },
+  messageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  messageRole: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: '#6b7280',
+    textTransform: 'uppercase',
+  },
+  messageTime: {
+    fontSize: 9,
+    color: '#9ca3af',
+  },
+  messageContent: {
+    fontSize: 11,
+    color: '#1f2937',
+    backgroundColor: '#f3f4f6',
+    padding: 10,
+    borderRadius: 4,
+  },
+  userMessage: {
+    backgroundColor: '#dcfce7',
+  },
+  assistantMessage: {
+    backgroundColor: '#f0fdfa',
+  },
+  infoBox: {
+    backgroundColor: '#f0fdfa',
+    padding: 15,
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: '#14b8a6',
+    marginBottom: 15,
+  },
+  infoLabel: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: '#6b7280',
+    marginBottom: 2,
+  },
+  infoValue: {
+    fontSize: 11,
+    color: '#1f2937',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 40,
+    right: 40,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    paddingTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  footerText: {
+    fontSize: 9,
+    color: '#9ca3af',
+  },
+  documentList: {
+    marginTop: 10,
+  },
+  documentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  documentBullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#14b8a6',
+    marginRight: 8,
+  },
+  documentName: {
+    fontSize: 10,
+    color: '#374151',
+  },
+})
+
+interface Message {
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  created_at: string
+}
+
+interface SessionDocument {
+  title: string
+}
+
+interface ReportData {
+  sessionId: string
+  startedAt: string
+  endedAt?: string
+  language: 'pt' | 'en'
+  messages: Message[]
+  documents: SessionDocument[]
+}
+
+const translations = {
+  pt: {
+    reportTitle: 'Relatório de Consultoria',
+    sessionInfo: 'Informações da Sessão',
+    sessionId: 'ID da Sessão',
+    date: 'Data',
+    duration: 'Duração',
+    conversation: 'Conversa',
+    documents: 'Documentos Analisados',
+    noDocuments: 'Nenhum documento foi carregado nesta sessão.',
+    recommendations: 'Próximos Passos',
+    recommendationsText: 'Com base na nossa conversa, recomendamos agendar uma consulta com a nossa equipa para discutir as opções de financiamento mais adequadas ao seu projeto. Entre em contacto através de geral@neomarca.pt ou +351 289 098 720.',
+    user: 'Você',
+    assistant: 'Assistente',
+    footer: 'Relatório gerado automaticamente pelo Bizin Portugal Assistant',
+    contact: 'geral@neomarca.pt | +351 289 098 720',
+  },
+  en: {
+    reportTitle: 'Consultation Report',
+    sessionInfo: 'Session Information',
+    sessionId: 'Session ID',
+    date: 'Date',
+    duration: 'Duration',
+    conversation: 'Conversation',
+    documents: 'Analyzed Documents',
+    noDocuments: 'No documents were uploaded in this session.',
+    recommendations: 'Next Steps',
+    recommendationsText: 'Based on our conversation, we recommend scheduling a consultation with our team to discuss the funding options most suitable for your project. Contact us at geral@neomarca.pt or +351 289 098 720.',
+    user: 'You',
+    assistant: 'Assistant',
+    footer: 'Report automatically generated by Bizin Portugal Assistant',
+    contact: 'geral@neomarca.pt | +351 289 098 720',
+  },
+}
+
+export function ReportDocument({ data }: { data: ReportData }) {
+  const t = translations[data.language]
+  const locale = data.language === 'pt' ? pt : undefined
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), "d 'de' MMMM 'de' yyyy, HH:mm", { locale })
+  }
+
+  const calculateDuration = () => {
+    if (!data.endedAt) return 'Em curso'
+    const start = new Date(data.startedAt)
+    const end = new Date(data.endedAt)
+    const diffMs = end.getTime() - start.getTime()
+    const diffMins = Math.round(diffMs / 60000)
+    if (diffMins < 60) return `${diffMins} minutos`
+    const hours = Math.floor(diffMins / 60)
+    const mins = diffMins % 60
+    return `${hours}h ${mins}min`
+  }
+
+  // Filter out system messages
+  const visibleMessages = data.messages.filter(m => m.role !== 'system')
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.logo}>Bizin Portugal</Text>
+          <Text style={styles.subtitle}>Consultoria de Investimento e Fundos Europeus</Text>
+        </View>
+
+        {/* Title */}
+        <Text style={styles.title}>{t.reportTitle}</Text>
+
+        {/* Session Info */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.sessionInfo}</Text>
+          <View style={styles.infoBox}>
+            <View style={{ marginBottom: 8 }}>
+              <Text style={styles.infoLabel}>{t.sessionId}</Text>
+              <Text style={styles.infoValue}>{data.sessionId.slice(0, 8)}...</Text>
+            </View>
+            <View style={{ marginBottom: 8 }}>
+              <Text style={styles.infoLabel}>{t.date}</Text>
+              <Text style={styles.infoValue}>{formatDate(data.startedAt)}</Text>
+            </View>
+            <View>
+              <Text style={styles.infoLabel}>{t.duration}</Text>
+              <Text style={styles.infoValue}>{calculateDuration()}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Documents */}
+        {data.documents.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t.documents}</Text>
+            <View style={styles.documentList}>
+              {data.documents.map((doc, index) => (
+                <View key={index} style={styles.documentItem}>
+                  <View style={styles.documentBullet} />
+                  <Text style={styles.documentName}>{doc.title}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Conversation */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.conversation}</Text>
+          {visibleMessages.slice(0, 20).map((message, index) => (
+            <View key={index} style={styles.messageContainer}>
+              <View style={styles.messageHeader}>
+                <Text style={styles.messageRole}>
+                  {message.role === 'user' ? t.user : t.assistant}
+                </Text>
+                <Text style={styles.messageTime}>
+                  {format(new Date(message.created_at), 'HH:mm')}
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.messageContent,
+                  message.role === 'user' ? styles.userMessage : styles.assistantMessage,
+                ]}
+              >
+                {message.content.slice(0, 500)}
+                {message.content.length > 500 ? '...' : ''}
+              </Text>
+            </View>
+          ))}
+          {visibleMessages.length > 20 && (
+            <Text style={styles.paragraph}>
+              ... e mais {visibleMessages.length - 20} mensagens
+            </Text>
+          )}
+        </View>
+
+        {/* Recommendations */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.recommendations}</Text>
+          <Text style={styles.paragraph}>{t.recommendationsText}</Text>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerText}>{t.footer}</Text>
+          <Text style={styles.footerText}>{t.contact}</Text>
+        </View>
+      </Page>
+    </Document>
+  )
+}
+
+// Helper function to render the report to a buffer
+export async function renderReportToBuffer(data: ReportData): Promise<Buffer> {
+  const element = <ReportDocument data={data} />
+  return await renderToBuffer(element)
+}
+
