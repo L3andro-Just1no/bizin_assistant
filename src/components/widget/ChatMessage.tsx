@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { VoicePlayer } from './VoicePlayer'
 
 interface Message {
   id: string
@@ -12,10 +13,12 @@ interface Message {
 interface ChatMessageProps {
   message: Message
   theme: 'light' | 'dark'
+  apiUrl: string
 }
 
-export function ChatMessage({ message, theme }: ChatMessageProps) {
+export function ChatMessage({ message, theme, apiUrl }: ChatMessageProps) {
   const isUser = message.role === 'user'
+  const isAssistant = message.role === 'assistant'
 
   return (
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
@@ -30,14 +33,21 @@ export function ChatMessage({ message, theme }: ChatMessageProps) {
         )}
       >
         <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
-        <span
-          className={cn(
-            'text-[10px] mt-1 block',
-            isUser ? 'text-white/70' : theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+        <div className={cn(
+          'flex items-center justify-between gap-2 mt-1',
+          isUser ? 'text-white/70' : theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+        )}>
+          <span className="text-[10px]">
+            {message.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+          {isAssistant && (
+            <VoicePlayer 
+              text={message.content} 
+              apiUrl={apiUrl}
+              theme={theme}
+            />
           )}
-        >
-          {message.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </span>
+        </div>
       </div>
     </div>
   )

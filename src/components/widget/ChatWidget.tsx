@@ -310,6 +310,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
                   key={message.id} 
                   message={message} 
                   theme={theme}
+                  apiUrl={apiUrl}
                 />
               ))}
               {isLoading && <TypingIndicator theme={theme} />}
@@ -348,6 +349,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
             disabled={!isPaid && messageCount >= FREE_MESSAGE_LIMIT}
             placeholder={t.inputPlaceholder}
             theme={theme}
+            apiUrl={apiUrl}
           />
         </div>
       )}

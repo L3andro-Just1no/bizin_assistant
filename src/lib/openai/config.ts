@@ -22,6 +22,9 @@ export const openai = {
   },
   get embeddings() {
     return getOpenAI().embeddings
+  },
+  get audio() {
+    return getOpenAI().audio
   }
 }
 
