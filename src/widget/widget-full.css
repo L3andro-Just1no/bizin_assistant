@@ -1,18 +1,102 @@
 /* Full Tailwind CSS for Widget */
 @import "tailwindcss";
 
-/* Safelist important classes that might get purged */
+/* Comprehensive color utilities for widget */
 @layer utilities {
-  .from-teal-500 { background: #14b8a6; }
-  .from-teal-600 { background: #0d9488; }
-  .to-emerald-600 { background: #059669; }
-  .to-emerald-700 { background: #047857; }
+  /* Gradient system - FROM colors */
+  .from-teal-500 {
+    --tw-gradient-from: #14b8a6;
+    --tw-gradient-to: rgb(20 184 166 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  
+  .from-teal-600 {
+    --tw-gradient-from: #0d9488;
+    --tw-gradient-to: rgb(13 148 136 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  
+  /* Gradient system - TO colors */
+  .to-emerald-600 {
+    --tw-gradient-to: #059669;
+  }
+  
+  .to-emerald-700 {
+    --tw-gradient-to: #047857;
+  }
+  
+  /* Gradient directions */
   .bg-gradient-to-br {
     background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
   }
+  
   .bg-gradient-to-r {
     background-image: linear-gradient(to right, var(--tw-gradient-stops));
   }
+  
+  /* Hover states for gradients */
+  .hover\:from-teal-600:hover {
+    --tw-gradient-from: #0d9488;
+    --tw-gradient-to: rgb(13 148 136 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  
+  .hover\:to-emerald-700:hover {
+    --tw-gradient-to: #047857;
+  }
+  
+  /* Background colors */
+  .bg-white { background-color: #ffffff; }
+  .bg-gray-50 { background-color: #f9fafb; }
+  .bg-gray-100 { background-color: #f3f4f6; }
+  .bg-gray-800 { background-color: #1f2937; }
+  .bg-gray-900 { background-color: #111827; }
+  .bg-teal-50 { background-color: #f0fdfa; }
+  .bg-emerald-50 { background-color: #ecfdf5; }
+  
+  /* Background with opacity */
+  .bg-white\/20 { background-color: rgb(255 255 255 / 0.2); }
+  .bg-white\/10 { background-color: rgb(255 255 255 / 0.1); }
+  
+  /* Hover background colors */
+  .hover\:bg-white\/20:hover { background-color: rgb(255 255 255 / 0.2); }
+  .hover\:bg-white\/10:hover { background-color: rgb(255 255 255 / 0.1); }
+  .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+  
+  /* Text colors */
+  .text-white { color: #ffffff; }
+  .text-gray-100 { color: #f3f4f6; }
+  .text-gray-400 { color: #9ca3af; }
+  .text-gray-500 { color: #6b7280; }
+  .text-gray-600 { color: #4b5563; }
+  .text-gray-700 { color: #374151; }
+  .text-gray-800 { color: #1f2937; }
+  .text-teal-600 { color: #0d9488; }
+  .text-teal-700 { color: #0f766e; }
+  .text-teal-800 { color: #115e59; }
+  .text-teal-900 { color: #134e4a; }
+  .text-emerald-500 { color: #10b981; }
+  .text-emerald-600 { color: #059669; }
+  .text-red-500 { color: #ef4444; }
+  
+  /* Text with opacity */
+  .text-white\/80 { color: rgb(255 255 255 / 0.8); }
+  
+  /* Border colors */
+  .border-gray-200 { border-color: #e5e7eb; }
+  .border-gray-700 { border-color: #374151; }
+  .border-teal-200 { border-color: #99f6e4; }
+  .border-teal-400 { border-color: #2dd4bf; }
+  .border-teal-500 { border-color: #14b8a6; }
+  
+  /* Hover border colors */
+  .hover\:border-teal-400:hover { border-color: #2dd4bf; }
+  
+  /* Disabled state */
+  .disabled\:opacity-50:disabled { opacity: 0.5; }
+  
+  /* Scale and transform */
+  .hover\:scale-105:hover { transform: scale(1.05); }
 }
 
 /* Widget-specific styles */
