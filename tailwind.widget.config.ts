@@ -6,6 +6,46 @@ const config: Config = {
     "./src/widget/**/*.{js,ts,jsx,tsx}",
     "./src/components/ui/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    // Gradient colors for the widget
+    'from-teal-500',
+    'from-teal-600',
+    'to-emerald-600',
+    'to-emerald-700',
+    'bg-gradient-to-br',
+    'bg-gradient-to-r',
+    'hover:from-teal-600',
+    'hover:to-emerald-700',
+    // Text colors
+    'text-teal-500',
+    'text-teal-600',
+    'text-teal-700',
+    'text-teal-800',
+    'text-teal-900',
+    'text-emerald-500',
+    'text-emerald-600',
+    // Background colors
+    'bg-teal-50',
+    'bg-teal-500',
+    'bg-emerald-50',
+    // Border colors
+    'border-teal-200',
+    'border-teal-400',
+    'border-teal-500',
+    'hover:border-teal-400',
+    // Additional utility classes used in the widget
+    'bg-gray-50',
+    'bg-gray-100',
+    'bg-gray-800',
+    'bg-gray-900',
+    'text-gray-400',
+    'text-gray-500',
+    'text-gray-600',
+    'text-gray-700',
+    'text-gray-800',
+    'border-gray-200',
+    'border-gray-700',
+  ],
   theme: {
     extend: {
       colors: {
