@@ -2,12 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import path from 'path'
+import tailwindcss from '@tailwindcss/postcss'
 
 export default defineConfig({
   plugins: [
     react(),
     cssInjectedByJsPlugin(),
   ],
+  css: {
+    postcss: {
+      plugins: [tailwindcss()],
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
