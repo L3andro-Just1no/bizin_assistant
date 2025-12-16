@@ -44,7 +44,7 @@ export default function HomePage() {
           </div>
 
           {/* Features */}
-          <div className="grid md:grid-cols-3 gap-8 text-left">
+          <div className="grid md:grid-cols-4 gap-6 text-left">
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <div className="w-12 h-12 rounded-lg bg-teal-100 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,7 +53,19 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Chat Inteligente</h3>
               <p className="text-gray-600 text-sm">
-                Converse com o assistente AI para obter informações sobre fundos e incentivos disponíveis.
+                Converse com o assistente AI para obter informações sobre fundos e incentivos.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm">
+              <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Comandos de Voz</h3>
+              <p className="text-gray-600 text-sm">
+                Grave mensagens de voz e ouça as respostas do assistente em áudio.
               </p>
             </div>
 
@@ -77,7 +89,7 @@ export default function HomePage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Upload de Documentos</h3>
               <p className="text-gray-600 text-sm">
-                Carregue documentos do seu projeto para uma análise mais detalhada e personalizada.
+                Carregue documentos do seu projeto para uma análise mais detalhada.
               </p>
             </div>
           </div>

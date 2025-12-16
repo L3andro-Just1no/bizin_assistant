@@ -125,3 +125,45 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+// DELETE /api/sessions/[id] - Delete session (with confirmation)
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params
+    const { searchParams } = new URL(request.url)
+    const confirmation = searchParams.get('confirm')
+
+    // Require confirmation text to match session ID start
+    const expectedConfirmation = id.slice(0, 8)
+    
+    if (confirmation !== expectedConfirmation) {
+      return NextResponse.json(
+        { error: 'Invalid confirmation code' },
+        { status: 400 }
+      )
+    }
+
+    const supabase = createAdminClient()
+
+    // Delete session (cascade will delete messages, session_documents, reports)
+    const { error } = await supabase
+      .from('sessions')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Failed to delete session:', error)
+      return NextResponse.json(
+        { error: 'Failed to delete session' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Session delete error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { SessionActions } from '@/components/admin/SessionActions'
 import { ArrowLeft, Download, FileText, Clock, MessageSquare } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { pt } from 'date-fns/locale'
@@ -110,9 +111,15 @@ export default async function ConversationDetailPage({ params }: PageProps) {
             {format(new Date(session.started_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: pt })}
           </p>
         </div>
-        <Badge variant={session.mode === 'paid' ? 'default' : 'secondary'} className="text-sm">
-          {session.mode === 'paid' ? 'Sessão Paga' : 'Sessão Gratuita'}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant={session.mode === 'paid' ? 'default' : 'secondary'} className="text-sm">
+            {session.mode === 'paid' ? 'Sessão Paga' : 'Sessão Gratuita'}
+          </Badge>
+          <SessionActions 
+            sessionId={id} 
+            sessionStatus={session.status}
+          />
+        </div>
       </div>
 
       {/* Stats */}

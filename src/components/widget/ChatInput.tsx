@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { VoiceRecorder } from './VoiceRecorder'
 
 interface ChatInputProps {
   onSend: (message: string) => void
@@ -11,9 +12,10 @@ interface ChatInputProps {
   disabled: boolean
   placeholder: string
   theme: 'light' | 'dark'
+  apiUrl: string
 }
 
-export function ChatInput({ onSend, isLoading, disabled, placeholder, theme }: ChatInputProps) {
+export function ChatInput({ onSend, isLoading, disabled, placeholder, theme, apiUrl }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -41,11 +43,23 @@ export function ChatInput({ onSend, isLoading, disabled, placeholder, theme }: C
     }
   }
 
+  const handleVoiceTranscript = (text: string) => {
+    setInput(text)
+    // Auto-focus textarea after transcription
+    textareaRef.current?.focus()
+  }
+
   return (
     <div className={`p-4 border-t ${theme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'}`}>
       <div className={`flex items-end gap-2 rounded-xl p-2 ${
         theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
       }`}>
+        <VoiceRecorder
+          onTranscript={handleVoiceTranscript}
+          theme={theme}
+          disabled={disabled || isLoading}
+          apiUrl={apiUrl}
+        />
         <Textarea
           ref={textareaRef}
           value={input}

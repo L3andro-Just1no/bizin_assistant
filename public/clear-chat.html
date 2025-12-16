@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Chat Session</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #14b8a6;
+      margin: 0 0 10px 0;
+    }
+    button {
+      background: linear-gradient(to right, #14b8a6, #059669);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      font-weight: 500;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .success {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+    }
+    .info {
+      background: #e0f2fe;
+      color: #075985;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧹 Limpar Chat</h1>
+    <p style="color: #6b7280; margin-bottom: 20px;">
+      Clique no botão abaixo para apagar a sua sessão de chat e começar do zero.
+    </p>
+    
+    <div id="currentSession" class="info">
+      <strong>Sessão atual:</strong> <span id="sessionId">Nenhuma</span><br>
+      <strong>Modo:</strong> <span id="sessionMode">-</span>
+    </div>
+
+    <button onclick="clearChat()">Limpar Sessão</button>
+    
+    <div id="success" class="success">
+      ✓ Sessão limpa! Recarregue a página para começar uma nova conversa.
+    </div>
+  </div>
+
+  <script>
+    // Display current session
+    const sessionId = localStorage.getItem('bizin_session_id');
+    const isPaid = localStorage.getItem('bizin_session_paid') === 'true';
+    
+    if (sessionId) {
+      document.getElementById('sessionId').textContent = sessionId.substring(0, 8) + '...';
+      document.getElementById('sessionMode').textContent = isPaid ? 'Pago' : 'Gratuito';
+    }
+
+    function clearChat() {
+      localStorage.removeItem('bizin_session_id');
+      localStorage.removeItem('bizin_session_paid');
+      document.getElementById('success').style.display = 'block';
+      document.getElementById('currentSession').style.display = 'none';
+      
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
+

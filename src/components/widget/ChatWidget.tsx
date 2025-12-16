@@ -64,9 +64,18 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
   const [messageCount, setMessageCount] = useState(0)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showDocumentUpload, setShowDocumentUpload] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const t = TRANSLATIONS[language]
+
+  // Scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, isLoading])
 
   // Initialize session
   useEffect(() => {
@@ -129,13 +138,6 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
       initSession()
     }
   }, [isOpen, sessionId, apiUrl, language, t.welcome])
-
-  // Scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages, isLoading])
 
   // Check for payment completion
   useEffect(() => {
@@ -301,18 +303,20 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-4">
               {messages.map((message) => (
                 <ChatMessage 
                   key={message.id} 
                   message={message} 
                   theme={theme}
+                  apiUrl={apiUrl}
                 />
               ))}
               {isLoading && <TypingIndicator theme={theme} />}
+              <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Paid session actions */}
           {isPaid && (
@@ -345,6 +349,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
             disabled={!isPaid && messageCount >= FREE_MESSAGE_LIMIT}
             placeholder={t.inputPlaceholder}
             theme={theme}
+            apiUrl={apiUrl}
           />
         </div>
       )}
