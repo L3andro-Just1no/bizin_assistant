@@ -1,8 +1,7 @@
 import React from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { ChatWidget } from '../components/widget/ChatWidget'
-import '../app/globals.css'
-import './widget.css'
+import './widget-full.css'
 
 interface WidgetConfig {
   siteKey?: string
