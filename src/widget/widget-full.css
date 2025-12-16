@@ -1,6 +1,20 @@
 /* Full Tailwind CSS for Widget */
 @import "tailwindcss";
 
+/* Safelist important classes that might get purged */
+@layer utilities {
+  .from-teal-500 { background: #14b8a6; }
+  .from-teal-600 { background: #0d9488; }
+  .to-emerald-600 { background: #059669; }
+  .to-emerald-700 { background: #047857; }
+  .bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+  }
+  .bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+  }
+}
+
 /* Widget-specific styles */
 #bizin-agent-container {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
