@@ -11,11 +11,7 @@ export default defineConfig({
   ],
   css: {
     postcss: {
-      plugins: [
-        tailwindcss({
-          config: './tailwind.widget.config.ts',
-        }),
-      ],
+      plugins: [tailwindcss()],
     },
   },
   resolve: {
