@@ -3,46 +3,42 @@
 
 /* Comprehensive color utilities for widget */
 @layer utilities {
-  /* Gradient system - FROM colors */
-  .from-teal-500 {
-    --tw-gradient-from: #14b8a6;
-    --tw-gradient-to: rgb(20 184 166 / 0);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  /* Direct gradient implementations - no CSS variables needed */
+  
+  /* Primary gradient combinations - bottom right */
+  .from-teal-500.to-emerald-600.bg-gradient-to-br,
+  .bg-gradient-to-br.from-teal-500.to-emerald-600 {
+    background-image: linear-gradient(to bottom right, #14b8a6, #059669) !important;
   }
   
-  .from-teal-600 {
-    --tw-gradient-from: #0d9488;
-    --tw-gradient-to: rgb(13 148 136 / 0);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  /* Primary gradient combinations - right */
+  .from-teal-500.to-emerald-600.bg-gradient-to-r,
+  .bg-gradient-to-r.from-teal-500.to-emerald-600 {
+    background-image: linear-gradient(to right, #14b8a6, #059669) !important;
   }
   
-  /* Gradient system - TO colors */
-  .to-emerald-600 {
-    --tw-gradient-to: #059669;
+  /* Hover state gradients - right direction */
+  .from-teal-500.to-emerald-600.hover\:from-teal-600.hover\:to-emerald-700.bg-gradient-to-r:hover,
+  .bg-gradient-to-r.from-teal-500.to-emerald-600.hover\:from-teal-600.hover\:to-emerald-700:hover {
+    background-image: linear-gradient(to right, #0d9488, #047857) !important;
   }
   
-  .to-emerald-700 {
-    --tw-gradient-to: #047857;
+  /* Hover state gradients - bottom right direction */
+  .from-teal-500.to-emerald-600.hover\:from-teal-600.hover\:to-emerald-700.bg-gradient-to-br:hover,
+  .bg-gradient-to-br.from-teal-500.to-emerald-600.hover\:from-teal-600.hover\:to-emerald-700:hover {
+    background-image: linear-gradient(to bottom right, #0d9488, #047857) !important;
   }
   
-  /* Gradient directions */
-  .bg-gradient-to-br {
-    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+  /* Fallback for any gradient-to-br with from-teal-500 */
+  .bg-gradient-to-br.from-teal-500,
+  .from-teal-500.bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, #14b8a6, #059669) !important;
   }
   
-  .bg-gradient-to-r {
-    background-image: linear-gradient(to right, var(--tw-gradient-stops));
-  }
-  
-  /* Hover states for gradients */
-  .hover\:from-teal-600:hover {
-    --tw-gradient-from: #0d9488;
-    --tw-gradient-to: rgb(13 148 136 / 0);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-  }
-  
-  .hover\:to-emerald-700:hover {
-    --tw-gradient-to: #047857;
+  /* Fallback for any gradient-to-r with from-teal-500 */
+  .bg-gradient-to-r.from-teal-500,
+  .from-teal-500.bg-gradient-to-r {
+    background-image: linear-gradient(to right, #14b8a6, #059669) !important;
   }
   
   /* Background colors */
