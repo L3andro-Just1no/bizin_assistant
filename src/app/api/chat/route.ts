@@ -38,15 +38,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check free tier limit
+    // All sessions have unlimited messages
     const isPaid = session.mode === 'paid'
-    if (!isPaid && session.message_count >= FREE_MESSAGE_LIMIT) {
-      return NextResponse.json({
-        upgrade_required: true,
-        message: null,
-        remaining_messages: 0,
-      })
-    }
 
     // Save user message
     const { error: userMsgError } = await supabase
@@ -110,13 +103,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calculate remaining messages for free tier
-    const newMessageCount = session.message_count + 1
-    const remainingMessages = isPaid ? undefined : Math.max(0, FREE_MESSAGE_LIMIT - newMessageCount)
-
+    // Return response
     return NextResponse.json({
       message: assistantMsg,
-      remaining_messages: remainingMessages,
       upgrade_required: false,
     })
   } catch (error) {

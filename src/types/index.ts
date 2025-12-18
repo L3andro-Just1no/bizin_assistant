@@ -103,6 +103,6 @@ export interface WidgetConfig {
 }
 
 // Constants
-export const FREE_MESSAGE_LIMIT = 5
+export const FREE_MESSAGE_LIMIT = 999999 // Unlimited messages
 export const PAID_SESSION_PRICE_CENTS = 4900 // €49.00
 
