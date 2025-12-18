@@ -11,26 +11,27 @@ interface ChatHeaderProps {
   onRestart?: () => void
 }
 
+const SUBTITLES = {
+  pt: 'Assistente de Investimento',
+  en: 'Investment Assistant',
+  fr: 'Assistant d\'Investissement',
+  es: 'Asistente de Inversión'
+}
+
 export function ChatHeader({ theme, onClose, onRestart, language }: ChatHeaderProps) {
   return (
     <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            className="w-6 h-6"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
+        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
+          <img 
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%231e293b'/%3E%3Cpath d='M15 12h6c6 0 10 4 10 10s-4 10-10 10h-6V12zm6 16c3.5 0 6-2.5 6-6s-2.5-6-6-6h-2v12h2z' fill='%2310b981'/%3E%3C/svg%3E"
+            alt="Bizin Logo" 
+            className="w-full h-full object-cover"
+          />
         </div>
         <div>
           <h3 className="font-semibold text-sm">Bizin Portugal</h3>
-          <p className="text-xs text-white/80">Assistente de Investimento</p>
+          <p className="text-xs text-white/80">{SUBTITLES[language]}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
