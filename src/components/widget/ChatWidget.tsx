@@ -28,7 +28,7 @@ interface WidgetProps {
 
 const TRANSLATIONS = {
   pt: {
-    welcome: 'Olá! 👋 Sou o assistente da Bizin Portugal. Como posso ajudá-lo hoje?',
+    welcome: 'Olá! Como posso ajudá-lo hoje? Está interessado em informações sobre fundos europeus, incentivos fiscais, programas de apoio ou outras questões relacionadas com empreendedorismo em Portugal?',
     inputPlaceholder: 'Escreva a sua mensagem...',
     sendButton: 'Enviar',
     upgradeTitle: 'Limite de mensagens atingido',
@@ -39,6 +39,7 @@ const TRANSLATIONS = {
     generateReport: 'Gerar relatório PDF',
     paidSession: 'Sessão paga',
     freeSession: 'Sessão gratuita',
+    restartTitle: 'Reiniciar conversa',
   },
   en: {
     welcome: 'Hello! 👋 I\'m the Bizin Portugal assistant. How can I help you today?',
@@ -52,6 +53,7 @@ const TRANSLATIONS = {
     generateReport: 'Generate PDF report',
     paidSession: 'Paid session',
     freeSession: 'Free session',
+    restartTitle: 'Restart conversation',
   }
 }
 
@@ -246,6 +248,22 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
     }
   }
 
+  const handleRestart = () => {
+    // Clear localStorage
+    localStorage.removeItem('bizin_session_id')
+    localStorage.removeItem('bizin_session_paid')
+
+    // Reset state
+    setSessionId(null)
+    setMessages([])
+    setIsPaid(false)
+    setMessageCount(0)
+    setShowDocumentUpload(false)
+
+    // Trigger new session creation by clearing sessionId
+    // The useEffect will detect this and create a new session
+  }
+
   return (
     <>
       {/* Floating chat button */}
@@ -268,11 +286,12 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
               : 'bg-white border-gray-200'
           }`}
         >
-          <ChatHeader 
+          <ChatHeader
             isPaid={isPaid}
             language={language}
             theme={theme}
             onClose={() => setIsOpen(false)}
+            onRestart={handleRestart}
           />
 
           {/* Status bar */}
