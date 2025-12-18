@@ -62,7 +62,6 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
   const [isLoading, setIsLoading] = useState(false)
   const [isPaid, setIsPaid] = useState(false)
   const [messageCount, setMessageCount] = useState(0)
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showDocumentUpload, setShowDocumentUpload] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -159,12 +158,6 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
   const sendMessage = useCallback(async (content: string) => {
     if (!sessionId || isLoading) return
 
-    // Check free tier limit
-    if (!isPaid && messageCount >= FREE_MESSAGE_LIMIT) {
-      setShowUpgradeModal(true)
-      return
-    }
-
     const userMessage: Message = {
       id: uuidv4(),
       role: 'user',
@@ -258,8 +251,6 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
     }
   }
 
-  const remainingMessages = Math.max(0, FREE_MESSAGE_LIMIT - messageCount)
-
   return (
     <>
       {/* Floating chat button */}
@@ -293,13 +284,10 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
           <div className={`px-4 py-2 flex items-center justify-between text-xs ${
             theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-50 text-gray-600'
           }`}>
-            <span className={`flex items-center gap-1.5 ${isPaid ? 'text-emerald-600' : ''}`}>
-              <span className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span className={`flex items-center gap-1.5 ${isPaid ? 'text-emerald-600' : 'text-gray-500'}`}>
+              <span className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-gray-400'}`} />
               {isPaid ? t.paidSession : t.freeSession}
             </span>
-            {!isPaid && (
-              <span>{remainingMessages} {t.remainingMessages}</span>
-            )}
           </div>
 
           {/* Messages */}
