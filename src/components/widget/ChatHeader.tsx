@@ -22,11 +22,11 @@ export function ChatHeader({ theme, onClose, onRestart, language }: ChatHeaderPr
   return (
     <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
           <img 
-            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%231e293b'/%3E%3Cpath d='M15 12h6c6 0 10 4 10 10s-4 10-10 10h-6V12zm6 16c3.5 0 6-2.5 6-6s-2.5-6-6-6h-2v12h2z' fill='%2310b981'/%3E%3C/svg%3E"
+            src="https://bizin-site.vercel.app/logo.png"
             alt="Bizin Logo" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         </div>
         <div>
