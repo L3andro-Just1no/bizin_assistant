@@ -92,31 +92,125 @@ function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
     return 'pt' // Default for SSR
   }
 
-  // Check document language
-  const docLang = document.documentElement.lang || navigator.language || 'pt'
-
   // Map common language codes to our supported languages
   const langMap: Record<string, 'pt' | 'en' | 'fr' | 'es'> = {
     'pt': 'pt',
     'pt-pt': 'pt',
     'pt-br': 'pt',
+    'português': 'pt',
+    'portuguese': 'pt',
     'en': 'en',
     'en-us': 'en',
     'en-gb': 'en',
+    'english': 'en',
+    'inglês': 'en',
     'fr': 'fr',
     'fr-fr': 'fr',
+    'french': 'fr',
+    'français': 'fr',
+    'francês': 'fr',
     'es': 'es',
     'es-es': 'es',
     'es-mx': 'es',
+    'spanish': 'es',
+    'español': 'es',
+    'espanhol': 'es',
   }
 
-  // Extract base language (e.g., 'en' from 'en-US')
-  const baseLang = docLang.toLowerCase().split('-')[0]
-  const detected = langMap[docLang.toLowerCase()] || langMap[baseLang] || 'pt'
+  let detected: 'pt' | 'en' | 'fr' | 'es' = 'pt'
+  let detectionMethod = 'default'
+
+  // Method 1: Check localStorage (common in Next.js i18n)
+  try {
+    const storedLang = localStorage.getItem('language') || 
+                      localStorage.getItem('locale') || 
+                      localStorage.getItem('i18nextLng') ||
+                      localStorage.getItem('preferred-language')
+    if (storedLang) {
+      const mapped = langMap[storedLang.toLowerCase()]
+      if (mapped) {
+        detected = mapped
+        detectionMethod = 'localStorage'
+      }
+    }
+  } catch (e) {
+    // Ignore localStorage errors
+  }
+
+  // Method 2: Check URL path (e.g., /en/, /pt/)
+  if (detectionMethod === 'default') {
+    const pathMatch = window.location.pathname.match(/^\/(pt|en|fr|es)(\/|$)/)
+    if (pathMatch) {
+      detected = pathMatch[1] as 'pt' | 'en' | 'fr' | 'es'
+      detectionMethod = 'URL path'
+    }
+  }
+
+  // Method 3: Check document lang attribute
+  if (detectionMethod === 'default') {
+    const docLang = document.documentElement.lang
+    if (docLang) {
+      const baseLang = docLang.toLowerCase().split('-')[0]
+      const mapped = langMap[docLang.toLowerCase()] || langMap[baseLang]
+      if (mapped) {
+        detected = mapped
+        detectionMethod = 'document.lang'
+      }
+    }
+  }
+
+  // Method 4: Look for language selector text
+  if (detectionMethod === 'default') {
+    const langElements = document.querySelectorAll('[class*="language"], [class*="locale"], [data-language], [lang]')
+    for (const el of Array.from(langElements)) {
+      const text = el.textContent?.toLowerCase() || ''
+      const dataLang = el.getAttribute('data-language')?.toLowerCase()
+      const lang = el.getAttribute('lang')?.toLowerCase()
+      
+      const searchText = `${text} ${dataLang} ${lang}`
+      for (const [key, value] of Object.entries(langMap)) {
+        if (searchText.includes(key)) {
+          detected = value
+          detectionMethod = 'DOM search'
+          break
+        }
+      }
+      if (detectionMethod === 'DOM search') break
+    }
+  }
+
+  // Method 5: Check for Next.js i18n cookie
+  if (detectionMethod === 'default') {
+    const cookies = document.cookie.split(';')
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=')
+      if (name === 'NEXT_LOCALE' || name === 'locale' || name === 'language') {
+        const mapped = langMap[value.toLowerCase()]
+        if (mapped) {
+          detected = mapped
+          detectionMethod = 'cookie'
+          break
+        }
+      }
+    }
+  }
+
+  // Method 6: Fallback to navigator language
+  if (detectionMethod === 'default') {
+    const navLang = navigator.language
+    const baseLang = navLang.toLowerCase().split('-')[0]
+    const mapped = langMap[navLang.toLowerCase()] || langMap[baseLang]
+    if (mapped) {
+      detected = mapped
+      detectionMethod = 'navigator.language'
+    }
+  }
   
   console.log('🌍 Language Detection:', {
+    'method': detectionMethod,
     'document.lang': document.documentElement.lang,
     'navigator.language': navigator.language,
+    'pathname': window.location.pathname,
     'detected': detected
   })
 
