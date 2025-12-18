@@ -137,11 +137,13 @@ function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
     // Ignore localStorage errors
   }
 
-  // Method 2: Check URL path (e.g., /en/, /pt/)
+  // Method 2: Check URL path (e.g., /en/, /pt/, /en-us/, etc.)
   if (detectionMethod === 'default') {
-    const pathMatch = window.location.pathname.match(/^\/(pt|en|fr|es)(\/|$)/)
+    const pathname = window.location.pathname
+    // Match /pt, /en, /fr, /es at start of path (with or without trailing content)
+    const pathMatch = pathname.match(/^\/(pt|en|fr|es)(?:[-_][a-z]+)?(\/|$)/i)
     if (pathMatch) {
-      detected = pathMatch[1] as 'pt' | 'en' | 'fr' | 'es'
+      detected = pathMatch[1].toLowerCase() as 'pt' | 'en' | 'fr' | 'es'
       detectionMethod = 'URL path'
     }
   }
@@ -231,27 +233,89 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
 
   const t = TRANSLATIONS[currentLanguage]
 
-  // Detect language on client mount
+  // Detect language on client mount and watch for changes
   useEffect(() => {
     const detectedLanguage = detectLanguage()
     if (detectedLanguage !== currentLanguage) {
       setCurrentLanguage(detectedLanguage)
     }
-  }, [])
 
-  // Re-detect language when widget opens (in case language changed while closed)
+    // Watch for HTML lang attribute changes (next-intl updates this)
+    const observer = new MutationObserver(() => {
+      const newLang = detectLanguage()
+      if (newLang !== currentLanguage) {
+        console.log('🔄 Language changed detected via MutationObserver:', {
+          old: currentLanguage,
+          new: newLang
+        })
+        setCurrentLanguage(newLang)
+        // Clear session when language changes
+        if (sessionId) {
+          localStorage.removeItem('bizin_session_id')
+          localStorage.removeItem('bizin_session_paid')
+          setSessionId(null)
+          setMessages([])
+          setIsPaid(false)
+          setMessageCount(0)
+        }
+      }
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['lang']
+    })
+
+    // Also watch for URL changes (for next-intl path-based routing)
+    const handleRouteChange = () => {
+      const newLang = detectLanguage()
+      if (newLang !== currentLanguage) {
+        console.log('🔄 Language changed detected via route change:', {
+          old: currentLanguage,
+          new: newLang
+        })
+        setCurrentLanguage(newLang)
+        // Clear session when language changes
+        if (sessionId) {
+          localStorage.removeItem('bizin_session_id')
+          localStorage.removeItem('bizin_session_paid')
+          setSessionId(null)
+          setMessages([])
+          setIsPaid(false)
+          setMessageCount(0)
+        }
+      }
+    }
+
+    // Listen for popstate (browser back/forward)
+    window.addEventListener('popstate', handleRouteChange)
+    
+    // Listen for custom route change events (Next.js)
+    window.addEventListener('routeChangeComplete', handleRouteChange)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('popstate', handleRouteChange)
+      window.removeEventListener('routeChangeComplete', handleRouteChange)
+    }
+  }, [currentLanguage, sessionId])
+
+  // Re-detect language when widget opens and periodically while open
   useEffect(() => {
-    if (isOpen) {
-      const detectedLanguage = detectLanguage()
-      console.log('🔄 Widget opened - Language check:', {
-        current: currentLanguage,
-        detected: detectedLanguage,
-        willUpdate: detectedLanguage !== currentLanguage
-      })
-      if (detectedLanguage !== currentLanguage) {
-        console.log('🔄 Updating language to:', detectedLanguage)
-        setCurrentLanguage(detectedLanguage)
-        // Clear session if language changed
+    if (!isOpen) return
+
+    // Check immediately when opening
+    const detectedLanguage = detectLanguage()
+    console.log('🔄 Widget opened - Language check:', {
+      current: currentLanguage,
+      detected: detectedLanguage,
+      willUpdate: detectedLanguage !== currentLanguage
+    })
+    if (detectedLanguage !== currentLanguage) {
+      console.log('🔄 Updating language to:', detectedLanguage)
+      setCurrentLanguage(detectedLanguage)
+      // Clear session if language changed (only if we have an existing session)
+      if (sessionId) {
         localStorage.removeItem('bizin_session_id')
         localStorage.removeItem('bizin_session_paid')
         setSessionId(null)
@@ -260,7 +324,29 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
         setMessageCount(0)
       }
     }
-  }, [isOpen])
+
+    // Also check periodically while widget is open (fallback)
+    const interval = setInterval(() => {
+      const newLang = detectLanguage()
+      if (newLang !== currentLanguage) {
+        console.log('🔄 Language changed detected via interval check:', {
+          old: currentLanguage,
+          new: newLang
+        })
+        setCurrentLanguage(newLang)
+        if (sessionId) {
+          localStorage.removeItem('bizin_session_id')
+          localStorage.removeItem('bizin_session_paid')
+          setSessionId(null)
+          setMessages([])
+          setIsPaid(false)
+          setMessageCount(0)
+        }
+      }
+    }, 2000) // Check every 2 seconds
+
+    return () => clearInterval(interval)
+  }, [isOpen, currentLanguage, sessionId])
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
