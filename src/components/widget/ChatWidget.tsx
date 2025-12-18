@@ -42,7 +42,7 @@ const TRANSLATIONS = {
     restartTitle: 'Reiniciar conversa',
   },
   en: {
-    welcome: 'Hello! 👋 I\'m the Bizin Portugal assistant. How can I help you today?',
+    welcome: 'Hello! How can I help you today? Are you interested in information about European funds, tax incentives, support programs or other issues related to entrepreneurship in Portugal?',
     inputPlaceholder: 'Type your message...',
     sendButton: 'Send',
     upgradeTitle: 'Message limit reached',
@@ -56,7 +56,7 @@ const TRANSLATIONS = {
     restartTitle: 'Restart conversation',
   },
   fr: {
-    welcome: 'Bonjour ! 👋 Je suis l\'assistant Bizin Portugal. Comment puis-je vous aider aujourd\'hui ? Êtes-vous intéressé par des informations sur les fonds européens, les incitations fiscales, les programmes de soutien ou d\'autres questions liées à l\'entrepreneuriat au Portugal ?',
+    welcome: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ? Êtes-vous intéressé par des informations sur les fonds européens, les incitations fiscales, les programmes de soutien ou d\'autres questions liées à l\'entrepreneuriat au Portugal ?',
     inputPlaceholder: 'Tapez votre message...',
     sendButton: 'Envoyer',
     upgradeTitle: 'Limite de messages atteinte',
@@ -70,7 +70,7 @@ const TRANSLATIONS = {
     restartTitle: 'Redémarrer la conversation',
   },
   es: {
-    welcome: '¡Hola! 👋 Soy el asistente de Bizin Portugal. ¿Cómo puedo ayudarte hoy? ¿Estás interesado en información sobre fondos europeos, incentivos fiscales, programas de apoyo u otras cuestiones relacionadas con el emprendimiento en Portugal?',
+    welcome: '¡Hola! ¿Cómo puedo ayudarte hoy? ¿Estás interesado en información sobre fondos europeos, incentivos fiscales, programas de apoyo u otras cuestiones relacionadas con el emprendimiento en Portugal?',
     inputPlaceholder: 'Escribe tu mensaje...',
     sendButton: 'Enviar',
     upgradeTitle: 'Límite de mensajes alcanzado',
@@ -241,6 +241,52 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
       setCurrentLanguage(detectedLanguage)
     }
   }, [])
+
+  // Watch for language changes from the site (via MutationObserver for HTML lang attribute)
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const detectedLanguage = detectLanguage()
+      
+      // If language changed from outside (site language selector)
+      if (detectedLanguage !== currentLanguage) {
+        console.log('🔄 Language change detected - Auto resetting:', {
+          from: currentLanguage,
+          to: detectedLanguage
+        })
+        
+        // Clear session and reset to new language
+        localStorage.removeItem('bizin_session_id')
+        localStorage.removeItem('bizin_session_paid')
+        setCurrentLanguage(detectedLanguage)
+        setSessionId(null)
+        setMessages([])
+        setIsPaid(false)
+        setMessageCount(0)
+        setShowDocumentUpload(false)
+      }
+    }
+
+    // Watch for HTML lang attribute changes (efficient - only triggers on actual changes)
+    const observer = new MutationObserver(handleLanguageChange)
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['lang'], // Only watch the lang attribute
+      subtree: false
+    })
+
+    // Also listen for URL changes (for path-based routing like /en/, /pt/)
+    const handleRouteChange = () => {
+      setTimeout(handleLanguageChange, 100) // Small delay to let DOM update
+    }
+    
+    window.addEventListener('popstate', handleRouteChange)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('popstate', handleRouteChange)
+    }
+  }, [currentLanguage]) // Re-setup observer when language changes
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
