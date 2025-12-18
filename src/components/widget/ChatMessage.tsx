@@ -16,6 +16,49 @@ interface ChatMessageProps {
   apiUrl: string
 }
 
+// Simple markdown parser for basic formatting
+function parseMarkdown(text: string): string {
+  let html = text
+    // Bold: **text** or __text__
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.*?)__/g, '<strong>$1</strong>')
+    // Italic: *text* or _text_ (but not if part of bold)
+    .replace(/(?<!\*)\*(?!\*)([^\*]+)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/(?<!_)_(?!_)([^_]+)_(?!_)/g, '<em>$1</em>')
+  
+  // Handle lists (bullet points with - or * at start of line)
+  const lines = html.split('\n')
+  let inList = false
+  const processedLines: string[] = []
+  
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim()
+    const isBullet = /^[-*]\s+/.test(trimmedLine)
+    
+    if (isBullet) {
+      if (!inList) {
+        processedLines.push('<ul class="list-disc ml-4 my-1">')
+        inList = true
+      }
+      const content = trimmedLine.replace(/^[-*]\s+/, '')
+      processedLines.push(`<li>${content}</li>`)
+    } else {
+      if (inList) {
+        processedLines.push('</ul>')
+        inList = false
+      }
+      processedLines.push(line)
+    }
+    
+    // Close list at the end if still open
+    if (index === lines.length - 1 && inList) {
+      processedLines.push('</ul>')
+    }
+  })
+  
+  return processedLines.join('\n').replace(/\n/g, '<br />')
+}
+
 export function ChatMessage({ message, theme, apiUrl }: ChatMessageProps) {
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
@@ -32,7 +75,14 @@ export function ChatMessage({ message, theme, apiUrl }: ChatMessageProps) {
             : 'bg-gray-100 text-gray-800 rounded-bl-md'
         )}
       >
-        <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        {isAssistant ? (
+          <div 
+            className="leading-relaxed markdown-content [&>strong]:font-semibold [&>ul]:my-2 [&>li]:my-0.5"
+            dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
+          />
+        ) : (
+          <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        )}
         <div className={cn(
           'flex items-center justify-between gap-2 mt-1',
           isUser ? 'text-white/70' : theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
