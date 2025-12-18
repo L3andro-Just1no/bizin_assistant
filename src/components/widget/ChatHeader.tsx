@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 interface ChatHeaderProps {
   isPaid: boolean
-  language: 'pt' | 'en'
+  language: 'pt' | 'en' | 'fr' | 'es'
   theme: 'light' | 'dark'
   onClose: () => void
   onRestart?: () => void
@@ -42,7 +42,12 @@ export function ChatHeader({ theme, onClose, onRestart, language }: ChatHeaderPr
             className={`hover:bg-white/20 text-white rounded-full w-8 h-8 ${
               theme === 'dark' ? 'hover:bg-white/10' : ''
             }`}
-            title={language === 'pt' ? 'Reiniciar conversa' : 'Restart conversation'}
+            title={
+              language === 'pt' ? 'Reiniciar conversa' :
+              language === 'fr' ? 'Redémarrer la conversation' :
+              language === 'es' ? 'Reiniciar conversación' :
+              'Restart conversation'
+            }
           >
             <RotateCcw className="w-4 h-4" />
           </Button>

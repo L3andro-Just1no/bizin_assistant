@@ -16,7 +16,7 @@ import { Upload, File, X, CheckCircle2, AlertCircle } from 'lucide-react'
 interface DocumentUploadProps {
   sessionId: string
   apiUrl: string
-  language: 'pt' | 'en'
+  language: 'pt' | 'en' | 'fr' | 'es'
   theme: 'light' | 'dark'
   onClose: () => void
 }
@@ -51,6 +51,28 @@ const TRANSLATIONS = {
     error: 'Upload error',
     done: 'Done',
     close: 'Close',
+  },
+  fr: {
+    title: 'Télécharger des documents',
+    description: 'Téléchargez des documents pour une analyse personnalisée. Nous acceptons les PDF, Word et fichiers texte.',
+    dropzone: 'Glissez les fichiers ou cliquez pour sélectionner',
+    maxSize: 'Taille maximale : 10 Mo par fichier',
+    uploading: 'Téléchargement en cours...',
+    success: 'Téléchargé avec succès',
+    error: 'Erreur de téléchargement',
+    done: 'Terminé',
+    close: 'Fermer',
+  },
+  es: {
+    title: 'Subir documentos',
+    description: 'Sube documentos para análisis personalizado. Aceptamos PDF, Word y archivos de texto.',
+    dropzone: 'Arrastra archivos o haz clic para seleccionar',
+    maxSize: 'Tamaño máximo: 10MB por archivo',
+    uploading: 'Subiendo...',
+    success: 'Subido con éxito',
+    error: 'Error de subida',
+    done: 'Hecho',
+    close: 'Cerrar',
   }
 }
 

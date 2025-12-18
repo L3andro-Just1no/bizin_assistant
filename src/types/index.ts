@@ -72,7 +72,7 @@ export interface ChatResponse {
 }
 
 export interface CreateSessionRequest {
-  language?: 'pt' | 'en'
+  language?: 'pt' | 'en' | 'fr' | 'es'
   metadata?: Record<string, unknown>
 }
 
@@ -98,7 +98,7 @@ export interface WidgetConfig {
   siteKey: string
   container?: string
   theme?: 'light' | 'dark'
-  language?: 'pt' | 'en'
+  language?: 'pt' | 'en' | 'fr' | 'es'
   apiUrl?: string
 }
 

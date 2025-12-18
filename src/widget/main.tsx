@@ -7,7 +7,7 @@ interface WidgetConfig {
   siteKey?: string
   container?: string
   theme?: 'light' | 'dark'
-  language?: 'pt' | 'en'
+  language?: 'pt' | 'en' | 'fr' | 'es'
   apiUrl?: string
 }
 
@@ -19,12 +19,38 @@ interface BizinAgentAPI {
 let root: Root | null = null
 let containerElement: HTMLElement | null = null
 
+// Language detection utility
+function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
+  // Check document language
+  const docLang = document.documentElement.lang || navigator.language || 'pt'
+
+  // Map common language codes to our supported languages
+  const langMap: Record<string, 'pt' | 'en' | 'fr' | 'es'> = {
+    'pt': 'pt',
+    'pt-pt': 'pt',
+    'pt-br': 'pt',
+    'en': 'en',
+    'en-us': 'en',
+    'en-gb': 'en',
+    'fr': 'fr',
+    'fr-fr': 'fr',
+    'es': 'es',
+    'es-es': 'es',
+    'es-mx': 'es',
+  }
+
+  // Extract base language (e.g., 'en' from 'en-US')
+  const baseLang = docLang.toLowerCase().split('-')[0]
+
+  return langMap[docLang.toLowerCase()] || langMap[baseLang] || 'pt'
+}
+
 const BizinAgent: BizinAgentAPI = {
   init: (config: WidgetConfig = {}) => {
     const {
       container,
       theme = 'light',
-      language = 'pt',
+      language = detectLanguage(),
       apiUrl = '',
     } = config
 
@@ -86,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       siteKey: script.getAttribute('data-site-key') || undefined,
       container: script.getAttribute('data-container') || undefined,
       theme: (script.getAttribute('data-theme') as 'light' | 'dark') || 'light',
-      language: (script.getAttribute('data-language') as 'pt' | 'en') || 'pt',
+      language: (script.getAttribute('data-language') as 'pt' | 'en' | 'fr' | 'es') || detectLanguage(),
       apiUrl: script.getAttribute('data-api-url') || '',
     }
     BizinAgent.init(config)

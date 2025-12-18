@@ -1,4 +1,4 @@
-import { openai, OPENAI_CONFIG, SYSTEM_PROMPT_PT, SYSTEM_PROMPT_EN } from './config'
+import { openai, OPENAI_CONFIG, SYSTEM_PROMPT_PT, SYSTEM_PROMPT_EN, SYSTEM_PROMPT_FR, SYSTEM_PROMPT_ES } from './config'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 interface Message {
@@ -8,7 +8,7 @@ interface Message {
 
 interface ChatContext {
   sessionId: string
-  language: 'pt' | 'en'
+  language: 'pt' | 'en' | 'fr' | 'es'
   isPaid: boolean
 }
 
@@ -21,6 +21,14 @@ const FALLBACK_RESPONSES = {
   en: [
     'Thank you for your message! Our AI assistant is temporarily unavailable. Please contact us directly at geral@neomarca.pt or +351 289 098 720 for immediate assistance.',
     'We apologize, but we are experiencing temporary technical difficulties. The Neomarca team is available to help at geral@neomarca.pt',
+  ],
+  fr: [
+    'Merci pour votre message ! Notre assistant IA est temporairement indisponible. Veuillez nous contacter directement à geral@neomarca.pt ou +351 289 098 720 pour une assistance immédiate.',
+    'Nous nous excusons, mais nous rencontrons des difficultés techniques temporaires. L\'équipe Neomarca est disponible pour aider à geral@neomarca.pt',
+  ],
+  es: [
+    '¡Gracias por su mensaje! Nuestro asistente de IA no está disponible temporalmente. Por favor, contáctenos directamente en geral@neomarca.pt o +351 289 098 720 para asistencia inmediata.',
+    'Disculpe, pero estamos experimentando dificultades técnicas temporales. El equipo de Neomarca está disponible para ayudar en geral@neomarca.pt',
   ],
 }
 
@@ -38,7 +46,13 @@ export async function generateChatResponse(
   }
 
   // Get system prompt based on language
-  const systemPrompt = language === 'pt' ? SYSTEM_PROMPT_PT : SYSTEM_PROMPT_EN
+  const systemPrompts = {
+    pt: SYSTEM_PROMPT_PT,
+    en: SYSTEM_PROMPT_EN,
+    fr: SYSTEM_PROMPT_FR,
+    es: SYSTEM_PROMPT_ES
+  }
+  const systemPrompt = systemPrompts[language]
 
   // Get relevant knowledge base context if available (skip if it might fail)
   let knowledgeContext: string | null = null

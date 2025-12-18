@@ -14,7 +14,7 @@ interface UpgradeModalProps {
   isOpen: boolean
   onClose: () => void
   onUpgrade: () => void
-  language: 'pt' | 'en'
+  language: 'pt' | 'en' | 'fr' | 'es'
   theme: 'light' | 'dark'
 }
 
@@ -44,6 +44,32 @@ const TRANSLATIONS = {
     email: 'geral@neomarca.pt',
     phone: '+351 289 098 720',
     close: 'Close',
+  },
+  fr: {
+    title: 'Limite de messages atteint',
+    description: 'Vous avez atteint la limite de messages gratuits. Pour continuer la conversation et obtenir une analyse personnalisée, contactez-nous :',
+    features: [
+      { icon: MessageSquare, text: 'Messages illimités' },
+      { icon: FileText, text: 'Téléchargement de documents pour analyse' },
+      { icon: FileOutput, text: 'Rapport PDF personnalisé' },
+    ],
+    contact: 'Contactez-nous',
+    email: 'geral@neomarca.pt',
+    phone: '+351 289 098 720',
+    close: 'Fermer',
+  },
+  es: {
+    title: 'Límite de mensajes alcanzado',
+    description: 'Ha alcanzado el límite de mensajes gratuitos. Para continuar la conversación y obtener un análisis personalizado, contáctenos:',
+    features: [
+      { icon: MessageSquare, text: 'Mensajes ilimitados' },
+      { icon: FileText, text: 'Subida de documentos para análisis' },
+      { icon: FileOutput, text: 'Informe PDF personalizado' },
+    ],
+    contact: 'Contáctenos',
+    email: 'geral@neomarca.pt',
+    phone: '+351 289 098 720',
+    close: 'Cerrar',
   }
 }
 

@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       sessionId: session_id,
       startedAt: session.started_at,
       endedAt: session.ended_at,
-      language: (session.language || 'pt') as 'pt' | 'en',
+      language: (session.language || 'pt') as 'pt' | 'en' | 'fr' | 'es',
       messages: messages || [],
       documents,
     }

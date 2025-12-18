@@ -28,6 +28,9 @@ export default function EmbedDemoPage() {
           </pre>
           
           <h3 className="text-lg font-semibold mt-6 mb-3">Configuration Options</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            <strong>Note:</strong> If no language is specified, the widget will automatically detect the website's language from the document's lang attribute or browser settings.
+          </p>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
@@ -44,8 +47,8 @@ export default function EmbedDemoPage() {
               </tr>
               <tr className="border-b">
                 <td className="py-2"><code>data-language</code></td>
-                <td className="py-2">Widget language (pt or en)</td>
-                <td className="py-2">pt</td>
+                <td className="py-2">Widget language (pt, en, fr, or es)</td>
+                <td className="py-2">Auto-detect</td>
               </tr>
               <tr className="border-b">
                 <td className="py-2"><code>data-theme</code></td>
