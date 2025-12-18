@@ -107,11 +107,20 @@ function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
 
   // Extract base language (e.g., 'en' from 'en-US')
   const baseLang = docLang.toLowerCase().split('-')[0]
+  const detected = langMap[docLang.toLowerCase()] || langMap[baseLang] || 'pt'
+  
+  console.log('🌍 Language Detection:', {
+    'document.lang': document.documentElement.lang,
+    'navigator.language': navigator.language,
+    'detected': detected
+  })
 
-  return langMap[docLang.toLowerCase()] || langMap[baseLang] || 'pt'
+  return detected
 }
 
 export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', theme = 'light' }: WidgetProps) {
+  // Always detect language from document on mount, ignore initial prop
+  const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | 'fr' | 'es'>(() => detectLanguage())
   const [isOpen, setIsOpen] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -119,18 +128,32 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
   const [isPaid, setIsPaid] = useState(false)
   const [messageCount, setMessageCount] = useState(0)
   const [showDocumentUpload, setShowDocumentUpload] = useState(false)
-  const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | 'fr' | 'es'>(initialLanguage)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const t = TRANSLATIONS[currentLanguage]
 
-  // Detect language on mount
+  // Re-detect language when widget opens (in case language changed while closed)
   useEffect(() => {
-    const detectedLanguage = detectLanguage()
-    if (detectedLanguage !== currentLanguage) {
-      setCurrentLanguage(detectedLanguage)
+    if (isOpen) {
+      const detectedLanguage = detectLanguage()
+      console.log('🔄 Widget opened - Language check:', {
+        current: currentLanguage,
+        detected: detectedLanguage,
+        willUpdate: detectedLanguage !== currentLanguage
+      })
+      if (detectedLanguage !== currentLanguage) {
+        console.log('🔄 Updating language to:', detectedLanguage)
+        setCurrentLanguage(detectedLanguage)
+        // Clear session if language changed
+        localStorage.removeItem('bizin_session_id')
+        localStorage.removeItem('bizin_session_paid')
+        setSessionId(null)
+        setMessages([])
+        setIsPaid(false)
+        setMessageCount(0)
+      }
     }
-  }, [])
+  }, [isOpen])
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -157,13 +180,21 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
           if (res.ok) {
             const data = await res.json()
             setMessageCount(data.session.message_count || 0)
-            if (data.messages) {
+            if (data.messages && data.messages.length > 0) {
               setMessages(data.messages.map((m: { id: string; role: 'user' | 'assistant'; content: string; created_at: string }) => ({
                 id: m.id,
                 role: m.role,
                 content: m.content,
                 createdAt: new Date(m.created_at)
               })))
+            } else {
+              // Session exists but has no messages, add welcome message
+              setMessages([{
+                id: uuidv4(),
+                role: 'assistant',
+                content: t.welcome,
+                createdAt: new Date()
+              }])
             }
             return
           }
@@ -174,6 +205,7 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
 
       // Create new session
       try {
+        console.log('🆕 Creating new session with language:', currentLanguage)
         const res = await fetch(`${apiUrl}/api/sessions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -185,6 +217,7 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
           localStorage.setItem('bizin_session_id', data.session.id)
           localStorage.setItem('bizin_session_paid', 'false')
           
+          console.log('👋 Adding welcome message in language:', currentLanguage)
           // Add welcome message
           setMessages([{
             id: uuidv4(),
@@ -318,6 +351,7 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
   const handleRestart = () => {
     // Detect current language from document
     const detectedLanguage = detectLanguage()
+    console.log('🔄 Restart clicked - Will use language:', detectedLanguage)
     
     // Clear localStorage
     localStorage.removeItem('bizin_session_id')
