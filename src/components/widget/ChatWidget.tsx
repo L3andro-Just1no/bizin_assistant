@@ -181,11 +181,6 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
 
       if (res.ok) {
         const data = await res.json()
-        
-        if (data.upgrade_required) {
-          setShowUpgradeModal(true)
-          return
-        }
 
         const assistantMessage: Message = {
           id: data.message.id,
@@ -342,14 +337,6 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
         </div>
       )}
 
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        onUpgrade={handleUpgrade}
-        language={language}
-        theme={theme}
-      />
 
       {/* Document Upload Modal */}
       {showDocumentUpload && sessionId && (
