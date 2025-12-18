@@ -85,8 +85,13 @@ const TRANSLATIONS = {
   }
 }
 
-// Language detection utility
+// Language detection utility (client-side only)
 function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
+  // Check if we're in the browser
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return 'pt' // Default for SSR
+  }
+
   // Check document language
   const docLang = document.documentElement.lang || navigator.language || 'pt'
 
@@ -119,8 +124,8 @@ function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
 }
 
 export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', theme = 'light' }: WidgetProps) {
-  // Always detect language from document on mount, ignore initial prop
-  const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | 'fr' | 'es'>(() => detectLanguage())
+  // Start with default, detect on client mount
+  const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | 'fr' | 'es'>('pt')
   const [isOpen, setIsOpen] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -131,6 +136,14 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const t = TRANSLATIONS[currentLanguage]
+
+  // Detect language on client mount
+  useEffect(() => {
+    const detectedLanguage = detectLanguage()
+    if (detectedLanguage !== currentLanguage) {
+      setCurrentLanguage(detectedLanguage)
+    }
+  }, [])
 
   // Re-detect language when widget opens (in case language changed while closed)
   useEffect(() => {
