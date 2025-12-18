@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateEmbedding } from '@/lib/openai/chat'
 import { v4 as uuidv4 } from 'uuid'
+import mammoth from 'mammoth'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = [
@@ -96,13 +97,14 @@ export async function POST(request: NextRequest) {
       .from(bucket)
       .getPublicUrl(fileName)
 
-    // Extract text content from file (simplified - in production use proper parsers)
+    // Extract text content from file
     let contentText = ''
-    if (file.type === 'text/plain') {
-      contentText = await file.text()
+    try {
+      contentText = await extractTextFromFile(file)
+    } catch (extractError) {
+      console.error('Text extraction error:', extractError)
+      // Continue without text content - file is still uploaded
     }
-    // For PDF and Word files, you would use libraries like pdf-parse or mammoth
-    // This is a placeholder - in production, implement proper text extraction
 
     // Save document record
     const { data: document, error: docError } = await supabase
@@ -153,6 +155,36 @@ export async function POST(request: NextRequest) {
       { error: 'Internal server error' },
       { status: 500 }
     )
+  }
+}
+
+async function extractTextFromFile(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+
+  try {
+    if (file.type === 'text/plain') {
+      // Plain text files
+      return await file.text()
+    } else if (file.type === 'application/pdf') {
+      // PDF files - use dynamic import for pdf-parse
+      const { PDFParse } = await import('pdf-parse')
+      const pdfParser = new PDFParse({ data: buffer })
+      const result = await pdfParser.getText()
+      return result.text
+    } else if (
+      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.type === 'application/msword'
+    ) {
+      // Word files (.docx)
+      const result = await mammoth.extractRawText({ buffer })
+      return result.value
+    }
+    
+    return ''
+  } catch (error) {
+    console.error('Error extracting text from file:', error)
+    throw error
   }
 }
 
