@@ -85,7 +85,33 @@ const TRANSLATIONS = {
   }
 }
 
-export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: WidgetProps) {
+// Language detection utility
+function detectLanguage(): 'pt' | 'en' | 'fr' | 'es' {
+  // Check document language
+  const docLang = document.documentElement.lang || navigator.language || 'pt'
+
+  // Map common language codes to our supported languages
+  const langMap: Record<string, 'pt' | 'en' | 'fr' | 'es'> = {
+    'pt': 'pt',
+    'pt-pt': 'pt',
+    'pt-br': 'pt',
+    'en': 'en',
+    'en-us': 'en',
+    'en-gb': 'en',
+    'fr': 'fr',
+    'fr-fr': 'fr',
+    'es': 'es',
+    'es-es': 'es',
+    'es-mx': 'es',
+  }
+
+  // Extract base language (e.g., 'en' from 'en-US')
+  const baseLang = docLang.toLowerCase().split('-')[0]
+
+  return langMap[docLang.toLowerCase()] || langMap[baseLang] || 'pt'
+}
+
+export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', theme = 'light' }: WidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -93,9 +119,18 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
   const [isPaid, setIsPaid] = useState(false)
   const [messageCount, setMessageCount] = useState(0)
   const [showDocumentUpload, setShowDocumentUpload] = useState(false)
+  const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | 'fr' | 'es'>(initialLanguage)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const t = TRANSLATIONS[language]
+  const t = TRANSLATIONS[currentLanguage]
+
+  // Detect language on mount
+  useEffect(() => {
+    const detectedLanguage = detectLanguage()
+    if (detectedLanguage !== currentLanguage) {
+      setCurrentLanguage(detectedLanguage)
+    }
+  }, [])
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -142,7 +177,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
         const res = await fetch(`${apiUrl}/api/sessions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ language })
+          body: JSON.stringify({ language: currentLanguage })
         })
         if (res.ok) {
           const data = await res.json()
@@ -166,7 +201,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
     if (isOpen && !sessionId) {
       initSession()
     }
-  }, [isOpen, sessionId, apiUrl, language, t.welcome])
+  }, [isOpen, sessionId, apiUrl, currentLanguage, t.welcome])
 
   // Check for payment completion
   useEffect(() => {
@@ -221,12 +256,16 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
         setMessages(prev => [...prev, assistantMessage])
       } else {
         // Handle error
+        const errorMessages = {
+          pt: 'Desculpe, ocorreu um erro. Por favor, tente novamente.',
+          en: 'Sorry, an error occurred. Please try again.',
+          fr: 'Désolé, une erreur s\'est produite. Veuillez réessayer.',
+          es: 'Lo siento, ocurrió un error. Por favor, inténtelo de nuevo.'
+        }
         const errorMessage: Message = {
           id: uuidv4(),
           role: 'assistant',
-          content: language === 'pt' 
-            ? 'Desculpe, ocorreu um erro. Por favor, tente novamente.'
-            : 'Sorry, an error occurred. Please try again.',
+          content: errorMessages[currentLanguage],
           createdAt: new Date()
         }
         setMessages(prev => [...prev, errorMessage])
@@ -236,7 +275,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
     } finally {
       setIsLoading(false)
     }
-  }, [sessionId, isLoading, isPaid, messageCount, apiUrl, language])
+  }, [sessionId, isLoading, isPaid, messageCount, apiUrl, currentLanguage])
 
   const handleUpgrade = async () => {
     if (!sessionId) return
@@ -277,11 +316,15 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
   }
 
   const handleRestart = () => {
+    // Detect current language from document
+    const detectedLanguage = detectLanguage()
+    
     // Clear localStorage
     localStorage.removeItem('bizin_session_id')
     localStorage.removeItem('bizin_session_paid')
 
-    // Reset state
+    // Reset state with new language
+    setCurrentLanguage(detectedLanguage)
     setSessionId(null)
     setMessages([])
     setIsPaid(false)
@@ -289,7 +332,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
     setShowDocumentUpload(false)
 
     // Trigger new session creation by clearing sessionId
-    // The useEffect will detect this and create a new session
+    // The useEffect will detect this and create a new session with the new language
   }
 
   return (
@@ -316,7 +359,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
         >
           <ChatHeader
             isPaid={isPaid}
-            language={language}
+            language={currentLanguage}
             theme={theme}
             onClose={() => setIsOpen(false)}
             onRestart={handleRestart}
@@ -390,7 +433,7 @@ export function ChatWidget({ apiUrl = '', language = 'pt', theme = 'light' }: Wi
         <DocumentUpload
           sessionId={sessionId}
           apiUrl={apiUrl}
-          language={language}
+          language={currentLanguage}
           theme={theme}
           onClose={() => setShowDocumentUpload(false)}
         />
