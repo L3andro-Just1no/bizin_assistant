@@ -22,7 +22,7 @@ interface Message {
 
 interface WidgetProps {
   apiUrl?: string
-  language?: 'pt' | 'en'
+  language?: 'pt' | 'en' | 'fr' | 'es'
   theme?: 'light' | 'dark'
 }
 
@@ -54,6 +54,34 @@ const TRANSLATIONS = {
     paidSession: 'Paid session',
     freeSession: 'Free session',
     restartTitle: 'Restart conversation',
+  },
+  fr: {
+    welcome: 'Bonjour ! 👋 Je suis l\'assistant Bizin Portugal. Comment puis-je vous aider aujourd\'hui ? Êtes-vous intéressé par des informations sur les fonds européens, les incitations fiscales, les programmes de soutien ou d\'autres questions liées à l\'entrepreneuriat au Portugal ?',
+    inputPlaceholder: 'Tapez votre message...',
+    sendButton: 'Envoyer',
+    upgradeTitle: 'Limite de messages atteinte',
+    upgradeDescription: 'Passez à une session payante pour continuer la conversation, télécharger des documents et recevoir un rapport PDF personnalisé.',
+    upgradeButton: 'Mettre à niveau maintenant - €49',
+    remainingMessages: 'messages restants',
+    uploadDocuments: 'Télécharger des documents',
+    generateReport: 'Générer un rapport PDF',
+    paidSession: 'Session payante',
+    freeSession: 'Session gratuite',
+    restartTitle: 'Redémarrer la conversation',
+  },
+  es: {
+    welcome: '¡Hola! 👋 Soy el asistente de Bizin Portugal. ¿Cómo puedo ayudarte hoy? ¿Estás interesado en información sobre fondos europeos, incentivos fiscales, programas de apoyo u otras cuestiones relacionadas con el emprendimiento en Portugal?',
+    inputPlaceholder: 'Escribe tu mensaje...',
+    sendButton: 'Enviar',
+    upgradeTitle: 'Límite de mensajes alcanzado',
+    upgradeDescription: 'Actualiza a una sesión de pago para continuar la conversación, subir documentos y recibir un informe PDF personalizado.',
+    upgradeButton: 'Actualizar ahora - €49',
+    remainingMessages: 'mensajes restantes',
+    uploadDocuments: 'Subir documentos',
+    generateReport: 'Generar informe PDF',
+    paidSession: 'Sesión de pago',
+    freeSession: 'Sesión gratuita',
+    restartTitle: 'Reiniciar conversación',
   }
 }
 

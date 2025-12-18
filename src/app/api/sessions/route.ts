@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 
 const CreateSessionSchema = z.object({
-  language: z.enum(['pt', 'en']).optional().default('pt'),
+  language: z.enum(['pt', 'en', 'fr', 'es']).optional().default('pt'),
   metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
