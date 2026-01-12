@@ -66,7 +66,16 @@ export async function generateChatResponse(
   // Build the full system prompt with knowledge context
   let fullSystemPrompt = systemPrompt
   if (knowledgeContext) {
-    fullSystemPrompt += `\n\n---\nContexto adicional da base de conhecimento:\n${knowledgeContext}`
+    fullSystemPrompt += `\n\n===== DOCUMENTOS DA BASE DE CONHECIMENTO =====\n${knowledgeContext}\n===== FIM DOS DOCUMENTOS =====\n\nUse APENAS as informações acima dos documentos para responder à pergunta do utilizador.`
+  } else {
+    // No documents found - be explicit about it
+    const noDocsMessages = {
+      pt: '\n\nNOTA: Não foram encontrados documentos relevantes na base de conhecimento para esta pergunta. Informe o utilizador que não tem informação disponível sobre este tópico.',
+      en: '\n\nNOTE: No relevant documents were found in the knowledge base for this question. Inform the user that you don\'t have information available on this topic.',
+      fr: '\n\nNOTE: Aucun document pertinent n\'a été trouvé dans la base de connaissances pour cette question. Informez l\'utilisateur que vous n\'avez pas d\'informations disponibles sur ce sujet.',
+      es: '\n\nNOTA: No se encontraron documentos relevantes en la base de conocimientos para esta pregunta. Informe al usuario que no tiene información disponible sobre este tema.'
+    }
+    fullSystemPrompt += noDocsMessages[language]
   }
 
   // Build messages array for OpenAI
