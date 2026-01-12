@@ -20,8 +20,8 @@ interface ChatMessageProps {
 function parseMarkdown(text: string): string {
   let html = text
     // Bold: **text** or __text__
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/__(.*?)__/g, '<strong>$1</strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
+    .replace(/__(.*?)__/g, '<strong style="font-weight: 700;">$1</strong>')
     // Italic: *text* or _text_ (but not if part of bold)
     .replace(/(?<!\*)\*(?!\*)([^\*]+)\*(?!\*)/g, '<em>$1</em>')
     .replace(/(?<!_)_(?!_)([^_]+)_(?!_)/g, '<em>$1</em>')
@@ -77,7 +77,10 @@ export function ChatMessage({ message, theme, apiUrl }: ChatMessageProps) {
       >
         {isAssistant ? (
           <div 
-            className="leading-relaxed markdown-content [&>strong]:font-semibold [&>ul]:my-2 [&>li]:my-0.5"
+            className="leading-relaxed markdown-content"
+            style={{
+              ['--tw-prose-bold' as any]: 'inherit'
+            }}
             dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
           />
         ) : (

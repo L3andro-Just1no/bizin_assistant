@@ -27,7 +27,8 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { pt } from 'date-fns/locale'
@@ -137,6 +138,15 @@ export default function AdminConversationsPage() {
                   <SelectItem value="ended">Terminado</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={fetchSessions}
+                disabled={isLoading}
+                title="Atualizar"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
             </div>
           </div>
         </CardHeader>
