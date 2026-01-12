@@ -16,15 +16,27 @@ interface Session {
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
 
-  // Get stats
+  // Get sessions with at least 1 user message for stats
+  const { data: allSessionsWithMessages } = await supabase
+    .from('messages')
+    .select('session_id')
+    .eq('role', 'user')
+
+  const allSessionIdsWithUserMessages = [...new Set(
+    (allSessionsWithMessages || []).map(m => m.session_id)
+  )]
+
+  // Get stats (only count sessions with user messages)
   const { count: totalSessions } = await supabase
     .from('sessions')
     .select('*', { count: 'exact', head: true })
+    .in('id', allSessionIdsWithUserMessages)
 
   const { count: paidSessions } = await supabase
     .from('sessions')
     .select('*', { count: 'exact', head: true })
     .eq('mode', 'paid')
+    .in('id', allSessionIdsWithUserMessages)
 
   const { count: totalDocuments } = await supabase
     .from('documents')
@@ -36,10 +48,21 @@ export default async function AdminDashboardPage() {
     .from('messages')
     .select('*', { count: 'exact', head: true })
 
-  // Get recent sessions
+  // Get sessions with at least 1 user message
+  const { data: sessionsWithMessages } = await supabase
+    .from('messages')
+    .select('session_id')
+    .eq('role', 'user')
+
+  const sessionIdsWithUserMessages = [...new Set(
+    (sessionsWithMessages || []).map(m => m.session_id)
+  )]
+
+  // Get recent sessions (only those with user messages)
   const { data: recentSessions } = await supabase
     .from('sessions')
     .select('id, mode, status, started_at, message_count')
+    .in('id', sessionIdsWithUserMessages)
     .order('started_at', { ascending: false })
     .limit(5)
 

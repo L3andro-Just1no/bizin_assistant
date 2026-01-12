@@ -481,10 +481,34 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
     }
   }
 
-  const handleRestart = () => {
+  const handleRestart = async () => {
     // Detect current language from document
     const detectedLanguage = detectLanguage()
     console.log('🔄 Restart clicked - Will use language:', detectedLanguage)
+    
+    // End the current session before restarting
+    if (sessionId) {
+      try {
+        const endUrl = `${apiUrl}/api/sessions/${sessionId}/end`
+        console.log('🔚 Ending session:', sessionId, 'URL:', endUrl)
+        const response = await fetch(endUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          console.log('✅ Session ended successfully:', result)
+        } else {
+          const errorText = await response.text()
+          console.error('❌ Session end failed:', response.status, errorText)
+        }
+      } catch (error) {
+        console.error('❌ Failed to end session:', error)
+      }
+    } else {
+      console.log('⚠️ No session ID to end')
+    }
     
     // Clear localStorage
     localStorage.removeItem('bizin_session_id')
@@ -500,6 +524,11 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
 
     // Trigger new session creation by clearing sessionId
     // The useEffect will detect this and create a new session with the new language
+  }
+
+  // Handle closing the widget - just close, don't end session
+  const handleClose = () => {
+    setIsOpen(false)
   }
 
   return (
@@ -528,7 +557,7 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
             isPaid={isPaid}
             language={currentLanguage}
             theme={theme}
-            onClose={() => setIsOpen(false)}
+            onClose={handleClose}
             onRestart={handleRestart}
           />
 

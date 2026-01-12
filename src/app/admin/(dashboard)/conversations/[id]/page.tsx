@@ -9,6 +9,49 @@ import { pt } from 'date-fns/locale'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+// Simple markdown parser for basic formatting
+function parseMarkdown(text: string): string {
+  let html = text
+    // Bold: **text** or __text__
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
+    .replace(/__(.*?)__/g, '<strong style="font-weight: 700;">$1</strong>')
+    // Italic: *text* or _text_ (but not if part of bold)
+    .replace(/(?<!\*)\*(?!\*)([^\*]+)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/(?<!_)_(?!_)([^_]+)_(?!_)/g, '<em>$1</em>')
+  
+  // Handle lists (bullet points with - or * at start of line)
+  const lines = html.split('\n')
+  let inList = false
+  const processedLines: string[] = []
+  
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim()
+    const isBullet = /^[-*]\s+/.test(trimmedLine)
+    
+    if (isBullet) {
+      if (!inList) {
+        processedLines.push('<ul class="list-disc ml-4 my-1">')
+        inList = true
+      }
+      const content = trimmedLine.replace(/^[-*]\s+/, '')
+      processedLines.push(`<li>${content}</li>`)
+    } else {
+      if (inList) {
+        processedLines.push('</ul>')
+        inList = false
+      }
+      processedLines.push(line)
+    }
+    
+    // Close list at the end if still open
+    if (index === lines.length - 1 && inList) {
+      processedLines.push('</ul>')
+    }
+  })
+  
+  return processedLines.join('\n').replace(/\n/g, '<br />')
+}
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
@@ -213,7 +256,14 @@ export default async function ConversationDetailPage({ params }: PageProps) {
                           {format(new Date(message.created_at), 'HH:mm')}
                         </span>
                       </div>
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.role === 'assistant' ? (
+                        <div 
+                          className="text-sm leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
+                        />
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      )}
                     </div>
                   </div>
                 ))

@@ -63,9 +63,33 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient()
 
+    // First, get session IDs that have at least 1 user message
+    const { data: sessionsWithMessages } = await supabase
+      .from('messages')
+      .select('session_id')
+      .eq('role', 'user')
+
+    const sessionIdsWithUserMessages = [...new Set(
+      (sessionsWithMessages || []).map(m => m.session_id)
+    )]
+
+    if (sessionIdsWithUserMessages.length === 0) {
+      // No sessions with user messages
+      return NextResponse.json({
+        sessions: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        },
+      })
+    }
+
     let query = supabase
       .from('sessions')
       .select('*', { count: 'exact' })
+      .in('id', sessionIdsWithUserMessages)
       .order('started_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1)
 
