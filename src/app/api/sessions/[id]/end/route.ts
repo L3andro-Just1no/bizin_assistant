@@ -5,6 +5,21 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+// OPTIONS handler for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  })
+}
+
 // POST /api/sessions/[id]/end - End a session (for beacon API compatibility)
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
@@ -27,18 +42,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       console.error('❌ API: Failed to end session:', id, error)
       return NextResponse.json(
         { error: 'Failed to end session' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       )
     }
 
     console.log('✅ API: Session ended successfully:', id, 'Status:', session.status, 'Ended at:', session.ended_at)
 
-    return NextResponse.json({ session })
+    return NextResponse.json({ session }, { headers: corsHeaders })
   } catch (error) {
     console.error('❌ API: Session end error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     )
   }
 }
