@@ -485,6 +485,7 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
     // Detect current language from document
     const detectedLanguage = detectLanguage()
     console.log('🔄 Restart clicked - Will use language:', detectedLanguage)
+    console.log('📊 Current state:', { sessionId, isPaid, messageCount, messagesLength: messages.length })
     
     // End the current session before restarting
     if (sessionId) {
@@ -507,7 +508,11 @@ export function ChatWidget({ apiUrl = '', language: initialLanguage = 'pt', them
         console.error('❌ Failed to end session:', error)
       }
     } else {
-      console.log('⚠️ No session ID to end')
+      console.warn('⚠️ No session ID to end - sessionId is:', sessionId)
+      console.log('📦 localStorage check:', {
+        storedSessionId: localStorage.getItem('bizin_session_id'),
+        storedPaid: localStorage.getItem('bizin_session_paid')
+      })
     }
     
     // Clear localStorage
