@@ -111,8 +111,81 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Extract user names from the first few messages of each session
+    const sessionsWithNames = await Promise.all(
+      (sessions || []).map(async (session) => {
+        // Get first 5 user messages to find the name
+        const { data: messages } = await supabase
+          .from('messages')
+          .select('role, content')
+          .eq('session_id', session.id)
+          .eq('role', 'user')
+          .order('created_at', { ascending: true })
+          .limit(5)
+
+        let userName = null
+        
+        // Try to extract name from first user message (often it's in response to greeting)
+        if (messages && messages.length > 0) {
+          const firstMessage = messages[0].content.trim()
+          
+          // Pattern 1: Direct name responses (common after "Qual é o teu nome?")
+          // Look for short messages that are likely just names
+          if (firstMessage.length < 50 && firstMessage.split(' ').length <= 3) {
+            // Remove common greetings/phrases
+            const cleaned = firstMessage
+              .replace(/^(olá|oi|hello|hi|hey|bom dia|boa tarde|boa noite|me chamo|meu nome é|i am|i'm|my name is|je suis|je m'appelle|me llamo|soy)/gi, '')
+              .replace(/[.,!?]/g, '')
+              .trim()
+            
+            if (cleaned && cleaned.length > 1 && cleaned.length < 30) {
+              // Capitalize first letter of each word
+              userName = cleaned
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ')
+            }
+          }
+          
+          // Pattern 2: Look for "my name is" or similar patterns in any of the first messages
+          if (!userName) {
+            for (const msg of messages) {
+              const content = msg.content.toLowerCase()
+              const namePatterns = [
+                /(?:me chamo|meu nome é|o meu nome é|sou o|sou a|chamo-me)\s+([a-zà-ÿ\s]{2,30})/i,
+                /(?:my name is|i am|i'm|call me)\s+([a-z\s]{2,30})/i,
+                /(?:je m'appelle|je suis)\s+([a-zà-ÿ\s]{2,30})/i,
+                /(?:me llamo|mi nombre es|soy)\s+([a-zà-ÿ\s]{2,30})/i,
+              ]
+              
+              for (const pattern of namePatterns) {
+                const match = content.match(pattern)
+                if (match && match[1]) {
+                  const extractedName = match[1].trim()
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ')
+                  
+                  if (extractedName.length > 1 && extractedName.length < 30) {
+                    userName = extractedName
+                    break
+                  }
+                }
+              }
+              if (userName) break
+            }
+          }
+        }
+
+        return {
+          ...session,
+          user_name: userName,
+        }
+      })
+    )
+
     return NextResponse.json({
-      sessions,
+      sessions: sessionsWithNames,
       pagination: {
         page,
         limit,
