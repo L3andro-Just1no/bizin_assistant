@@ -138,13 +138,13 @@ export async function GET(request: NextRequest) {
               .replace(/[.,!?]/g, '')
               .trim()
             
-            if (cleaned && cleaned.length > 1 && cleaned.length < 30) {
-              // Capitalize first letter of each word
-              userName = cleaned
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                .join(' ')
-            }
+          if (cleaned && cleaned.length > 1 && cleaned.length < 30) {
+            // Capitalize first letter of each word
+            userName = cleaned
+              .split(' ')
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' ')
+          }
           }
           
           // Pattern 2: Look for "my name is" or similar patterns in any of the first messages
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
                 if (match && match[1]) {
                   const extractedName = match[1].trim()
                     .split(' ')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                     .join(' ')
                   
                   if (extractedName.length > 1 && extractedName.length < 30) {

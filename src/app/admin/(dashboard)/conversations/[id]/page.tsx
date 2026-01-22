@@ -120,7 +120,7 @@ export default async function ConversationDetailPage({ params }: PageProps) {
       if (cleaned && cleaned.length > 1 && cleaned.length < 30) {
         userName = cleaned
           .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
           .join(' ')
       }
     }
@@ -141,7 +141,7 @@ export default async function ConversationDetailPage({ params }: PageProps) {
           if (match && match[1]) {
             const extractedName = match[1].trim()
               .split(' ')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
               .join(' ')
             
             if (extractedName.length > 1 && extractedName.length < 30) {
