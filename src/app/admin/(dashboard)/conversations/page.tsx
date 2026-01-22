@@ -41,6 +41,7 @@ interface Session {
   ended_at: string | null
   message_count: number
   language: string | null
+  user_name: string | null
 }
 
 interface Pagination {
@@ -92,7 +93,8 @@ export default function AdminConversationsPage() {
   }, [fetchSessions])
 
   const filteredSessions = sessions.filter(session =>
-    session.id.toLowerCase().includes(searchQuery.toLowerCase())
+    session.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (session.user_name && session.user_name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   return (
@@ -112,10 +114,10 @@ export default function AdminConversationsPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Pesquisar por ID..."
+                  placeholder="Pesquisar por nome ou ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-48"
+                  className="pl-9 w-56"
                 />
               </div>
               <Select value={modeFilter} onValueChange={setModeFilter}>
@@ -165,7 +167,7 @@ export default function AdminConversationsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID da Sessão</TableHead>
+                    <TableHead>Utilizador / ID</TableHead>
                     <TableHead>Modo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Mensagens</TableHead>
@@ -178,9 +180,18 @@ export default function AdminConversationsPage() {
                   {filteredSessions.map((session) => (
                     <TableRow key={session.id}>
                       <TableCell>
-                        <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                          {session.id.slice(0, 8)}...
-                        </code>
+                        {session.user_name ? (
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">{session.user_name}</span>
+                            <code className="text-xs text-gray-500">
+                              {session.id.slice(0, 8)}...
+                            </code>
+                          </div>
+                        ) : (
+                          <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                            {session.id.slice(0, 8)}...
+                          </code>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge variant={session.mode === 'paid' ? 'default' : 'secondary'}>

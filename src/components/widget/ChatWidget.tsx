@@ -28,7 +28,7 @@ interface WidgetProps {
 
 const TRANSLATIONS = {
   pt: {
-    welcome: 'Olá! Como posso ajudá-lo hoje? Está interessado em informações sobre fundos europeus, incentivos fiscais, programas de apoio ou outras questões relacionadas com empreendedorismo em Portugal?',
+    welcome: 'Olá, bem-vindo! Eu sou o Bizin Assistant. Qual é o teu nome e em que te posso ajudar hoje — fundos europeus, incentivos ou apoios ao empreendedorismo?',
     inputPlaceholder: 'Escreva a sua mensagem...',
     sendButton: 'Enviar',
     upgradeTitle: 'Limite de mensagens atingido',
@@ -42,7 +42,7 @@ const TRANSLATIONS = {
     restartTitle: 'Reiniciar conversa',
   },
   en: {
-    welcome: 'Hello! How can I help you today? Are you interested in information about European funds, tax incentives, support programs or other issues related to entrepreneurship in Portugal?',
+    welcome: 'Hello, welcome! I am Bizin Assistant. What is your name and how can I help you today — European funds, incentives or entrepreneurship support?',
     inputPlaceholder: 'Type your message...',
     sendButton: 'Send',
     upgradeTitle: 'Message limit reached',
@@ -56,7 +56,7 @@ const TRANSLATIONS = {
     restartTitle: 'Restart conversation',
   },
   fr: {
-    welcome: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ? Êtes-vous intéressé par des informations sur les fonds européens, les incitations fiscales, les programmes de soutien ou d\'autres questions liées à l\'entrepreneuriat au Portugal ?',
+    welcome: 'Bonjour, bienvenue ! Je suis Bizin Assistant. Quel est votre nom et comment puis-je vous aider aujourd\'hui — fonds européens, incitations ou soutien à l\'entrepreneuriat ?',
     inputPlaceholder: 'Tapez votre message...',
     sendButton: 'Envoyer',
     upgradeTitle: 'Limite de messages atteinte',
@@ -70,7 +70,7 @@ const TRANSLATIONS = {
     restartTitle: 'Redémarrer la conversation',
   },
   es: {
-    welcome: '¡Hola! ¿Cómo puedo ayudarte hoy? ¿Estás interesado en información sobre fondos europeos, incentivos fiscales, programas de apoyo u otras cuestiones relacionadas con el emprendimiento en Portugal?',
+    welcome: '¡Hola, bienvenido! Soy Bizin Assistant. ¿Cuál es tu nombre y en qué puedo ayudarte hoy — fondos europeos, incentivos o apoyo al emprendimiento?',
     inputPlaceholder: 'Escribe tu mensaje...',
     sendButton: 'Enviar',
     upgradeTitle: 'Límite de mensajes alcanzado',

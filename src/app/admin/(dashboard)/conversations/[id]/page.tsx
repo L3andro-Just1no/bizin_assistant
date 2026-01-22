@@ -103,6 +103,58 @@ export default async function ConversationDetailPage({ params }: PageProps) {
     .eq('session_id', id)
     .order('created_at', { ascending: true })
 
+  // Extract user name from first user messages
+  let userName: string | null = null
+  const userMessages = (messages || []).filter((m: Message) => m.role === 'user').slice(0, 5)
+  
+  if (userMessages.length > 0) {
+    const firstMessage = userMessages[0].content.trim()
+    
+    // Pattern 1: Direct name responses
+    if (firstMessage.length < 50 && firstMessage.split(' ').length <= 3) {
+      const cleaned = firstMessage
+        .replace(/^(olá|oi|hello|hi|hey|bom dia|boa tarde|boa noite|me chamo|meu nome é|i am|i'm|my name is|je suis|je m'appelle|me llamo|soy)/gi, '')
+        .replace(/[.,!?]/g, '')
+        .trim()
+      
+      if (cleaned && cleaned.length > 1 && cleaned.length < 30) {
+        userName = cleaned
+          .split(' ')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ')
+      }
+    }
+    
+    // Pattern 2: Look for "my name is" patterns
+    if (!userName) {
+      for (const msg of userMessages) {
+        const content = msg.content.toLowerCase()
+        const namePatterns = [
+          /(?:me chamo|meu nome é|o meu nome é|sou o|sou a|chamo-me)\s+([a-zà-ÿ\s]{2,30})/i,
+          /(?:my name is|i am|i'm|call me)\s+([a-z\s]{2,30})/i,
+          /(?:je m'appelle|je suis)\s+([a-zà-ÿ\s]{2,30})/i,
+          /(?:me llamo|mi nombre es|soy)\s+([a-zà-ÿ\s]{2,30})/i,
+        ]
+        
+        for (const pattern of namePatterns) {
+          const match = content.match(pattern)
+          if (match && match[1]) {
+            const extractedName = match[1].trim()
+              .split(' ')
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' ')
+            
+            if (extractedName.length > 1 && extractedName.length < 30) {
+              userName = extractedName
+              break
+            }
+          }
+        }
+        if (userName) break
+      }
+    }
+  }
+
   const { data: sessionDocs } = await supabase
     .from('session_documents')
     .select(`
@@ -148,9 +200,10 @@ export default async function ConversationDetailPage({ params }: PageProps) {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">
-            Sessão {id.slice(0, 8)}...
+            {userName ? userName : `Sessão ${id.slice(0, 8)}...`}
           </h1>
           <p className="text-gray-500 mt-1">
+            {userName && <span className="text-xs font-mono text-gray-400 mr-2">({id.slice(0, 8)}...)</span>}
             {format(new Date(session.started_at), "d 'de' MMMM 'de' yyyy, HH:mm", { locale: pt })}
           </p>
         </div>
