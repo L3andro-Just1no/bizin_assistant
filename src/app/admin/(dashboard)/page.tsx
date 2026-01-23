@@ -4,6 +4,7 @@ import { MessageSquare, CreditCard, FileText, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { pt } from 'date-fns/locale'
 import Link from 'next/link'
+import { extractUserName } from '@/lib/openai/extract-name'
 
 interface Session {
   id: string
@@ -67,66 +68,24 @@ export default async function AdminDashboardPage() {
     .order('started_at', { ascending: false })
     .limit(5)
 
-  // Extract user names for recent sessions
+  // Extract user names for recent sessions using AI
   const recentSessions = await Promise.all(
     (recentSessionsData || []).map(async (session) => {
-      // Get first 5 user messages to find the name
+      // Get first 3 user messages to find the name
       const { data: messages } = await supabase
         .from('messages')
-        .select('role, content')
+        .select('content')
         .eq('session_id', session.id)
         .eq('role', 'user')
         .order('created_at', { ascending: true })
-        .limit(5)
+        .limit(3)
 
       let userName = null
       
       if (messages && messages.length > 0) {
-        const firstMessage = messages[0].content.trim()
-        
-        // Pattern 1: Direct name responses
-        if (firstMessage.length < 50 && firstMessage.split(' ').length <= 3) {
-          const cleaned = firstMessage
-            .replace(/^(olá|oi|hello|hi|hey|bom dia|boa tarde|boa noite|me chamo|meu nome é|i am|i'm|my name is|je suis|je m'appelle|me llamo|soy)/gi, '')
-            .replace(/[.,!?]/g, '')
-            .trim()
-          
-          if (cleaned && cleaned.length > 1 && cleaned.length < 30) {
-            userName = cleaned
-              .split(' ')
-              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-              .join(' ')
-          }
-        }
-        
-        // Pattern 2: Look for "my name is" patterns
-        if (!userName) {
-          for (const msg of messages) {
-            const content = msg.content.toLowerCase()
-            const namePatterns = [
-              /(?:me chamo|meu nome é|o meu nome é|sou o|sou a|chamo-me)\s+([a-zà-ÿ\s]{2,30})/i,
-              /(?:my name is|i am|i'm|call me)\s+([a-z\s]{2,30})/i,
-              /(?:je m'appelle|je suis)\s+([a-zà-ÿ\s]{2,30})/i,
-              /(?:me llamo|mi nombre es|soy)\s+([a-zà-ÿ\s]{2,30})/i,
-            ]
-            
-            for (const pattern of namePatterns) {
-              const match = content.match(pattern)
-              if (match && match[1]) {
-                const extractedName = match[1].trim()
-                  .split(' ')
-                  .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                  .join(' ')
-                
-                if (extractedName.length > 1 && extractedName.length < 30) {
-                  userName = extractedName
-                  break
-                }
-              }
-            }
-            if (userName) break
-          }
-        }
+        // Use AI to extract the name from messages
+        const messageContents = messages.map(m => m.content)
+        userName = await extractUserName(messageContents)
       }
 
       return {
