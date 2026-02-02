@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teste Markdown Parser</title>
+  <style>
+    body { 
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .message {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 10px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h3 { margin: 10px 0; }
+    .test-input {
+      width: 100%;
+      height: 150px;
+      margin: 10px 0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Teste do Parser Markdown</h1>
+  
+  <div>
+    <h2>Teste 1: Link em Heading</h2>
+    <textarea class="test-input" id="test1">### [Consultoria de Investimento](https://outlook.office.com/booking/test)</textarea>
+    <button onclick="testMarkdown('test1', 'result1')">Testar</button>
+    <div class="message" id="result1"></div>
+  </div>
+  
+  <div>
+    <h2>Teste 2: Link Normal</h2>
+    <textarea class="test-input" id="test2">Pode agendar através deste [link de agendamento](https://example.com)</textarea>
+    <button onclick="testMarkdown('test2', 'result2')">Testar</button>
+    <div class="message" id="result2"></div>
+  </div>
+  
+  <div>
+    <h2>Teste 3: Lista com Links</h2>
+    <textarea class="test-input" id="test3">- [Consultoria Fiscal](https://example.com/fiscal)
+- [Consultoria de Investimento](https://example.com/invest)
+- **Outro serviço** sem link</textarea>
+    <button onclick="testMarkdown('test3', 'result3')">Testar</button>
+    <div class="message" id="result3"></div>
+  </div>
+
+  <script>
+    function parseInlineMarkdown(text) {
+      let result = text
+      
+      // Links: [text](url)
+      result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+        const formattedLinkText = linkText
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0d9488; text-decoration: underline; cursor: pointer; font-weight: 500;">${formattedLinkText}</a>`
+      })
+      
+      // Bold
+      result = result.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
+      result = result.replace(/__(.+?)__/g, '<strong style="font-weight: 700;">$1</strong>')
+      
+      // Italic
+      result = result.replace(/(?<!\*)\*(?!\*)([^\*]+?)\*(?!\*)/g, '<em>$1</em>')
+      result = result.replace(/(?<!_)_(?!_)([^_]+?)_(?!_)/g, '<em>$1</em>')
+      
+      return result
+    }
+
+    function parseMarkdown(text) {
+      const lines = text.split('\n')
+      let inList = false
+      const processedLines = []
+      
+      lines.forEach((line, index) => {
+        let processedLine = line.trim()
+        
+        const isBullet = /^[-*]\s+/.test(processedLine)
+        
+        if (isBullet) {
+          if (!inList) {
+            processedLines.push('<ul style="list-style: disc; margin-left: 20px; margin-top: 8px; margin-bottom: 8px;">')
+            inList = true
+          }
+          let content = processedLine.replace(/^[-*]\s+/, '')
+          content = parseInlineMarkdown(content)
+          processedLines.push(`<li style="line-height: 1.6;">${content}</li>`)
+        } else {
+          if (inList) {
+            processedLines.push('</ul>')
+            inList = false
+          }
+          
+          const h3Match = processedLine.match(/^###\s+(.+)$/)
+          const h2Match = processedLine.match(/^##\s+(.+)$/)
+          const h1Match = processedLine.match(/^#\s+(.+)$/)
+          
+          if (h3Match) {
+            const content = parseInlineMarkdown(h3Match[1])
+            processedLines.push(`<h3 style="font-weight: 700; margin-top: 12px; margin-bottom: 6px; font-size: 16px;">${content}</h3>`)
+          } else if (h2Match) {
+            const content = parseInlineMarkdown(h2Match[1])
+            processedLines.push(`<h2 style="font-weight: 700; margin-top: 16px; margin-bottom: 8px; font-size: 18px;">${content}</h2>`)
+          } else if (h1Match) {
+            const content = parseInlineMarkdown(h1Match[1])
+            processedLines.push(`<h1 style="font-weight: 700; margin-top: 16px; margin-bottom: 8px; font-size: 20px;">${content}</h1>`)
+          } else if (processedLine) {
+            processedLine = parseInlineMarkdown(processedLine)
+            processedLines.push(processedLine)
+          } else {
+            processedLines.push('')
+          }
+        }
+        
+        if (index === lines.length - 1 && inList) {
+          processedLines.push('</ul>')
+        }
+      })
+      
+      return processedLines.join('<br />')
+    }
+
+    function testMarkdown(inputId, resultId) {
+      const input = document.getElementById(inputId).value
+      const result = parseMarkdown(input)
+      document.getElementById(resultId).innerHTML = result
+      
+      console.log('Input:', input)
+      console.log('Output HTML:', result)
+    }
+    
+    // Auto-test on load
+    window.onload = () => {
+      testMarkdown('test1', 'result1')
+      testMarkdown('test2', 'result2')
+      testMarkdown('test3', 'result3')
+    }
+  </script>
+</body>
+</html>

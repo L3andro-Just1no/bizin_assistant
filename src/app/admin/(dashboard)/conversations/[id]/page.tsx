@@ -10,38 +10,55 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { extractUserName } from '@/lib/openai/extract-name'
 
-// Simple markdown parser for basic formatting
+// Enhanced markdown parser with support for headings, links, and inline formatting
 function parseMarkdown(text: string): string {
-  let html = text
-    // Bold: **text** or __text__
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
-    .replace(/__(.*?)__/g, '<strong style="font-weight: 700;">$1</strong>')
-    // Italic: *text* or _text_ (but not if part of bold)
-    .replace(/(?<!\*)\*(?!\*)([^\*]+)\*(?!\*)/g, '<em>$1</em>')
-    .replace(/(?<!_)_(?!_)([^_]+)_(?!_)/g, '<em>$1</em>')
-  
-  // Handle lists (bullet points with - or * at start of line)
-  const lines = html.split('\n')
+  const lines = text.split('\n')
   let inList = false
   const processedLines: string[] = []
   
   lines.forEach((line, index) => {
-    const trimmedLine = line.trim()
-    const isBullet = /^[-*]\s+/.test(trimmedLine)
+    let processedLine = line.trim()
+    
+    // Check for bullet points first
+    const isBullet = /^[-*]\s+/.test(processedLine)
     
     if (isBullet) {
       if (!inList) {
-        processedLines.push('<ul class="list-disc ml-4 my-1">')
+        processedLines.push('<ul class="list-disc ml-4 my-2 space-y-1">')
         inList = true
       }
-      const content = trimmedLine.replace(/^[-*]\s+/, '')
-      processedLines.push(`<li>${content}</li>`)
+      let content = processedLine.replace(/^[-*]\s+/, '')
+      content = parseInlineMarkdown(content)
+      processedLines.push(`<li class="leading-relaxed">${content}</li>`)
     } else {
+      // Close list if we were in one
       if (inList) {
         processedLines.push('</ul>')
         inList = false
       }
-      processedLines.push(line)
+      
+      // Check for headings (###, ##, #)
+      const h3Match = processedLine.match(/^###\s+(.+)$/)
+      const h2Match = processedLine.match(/^##\s+(.+)$/)
+      const h1Match = processedLine.match(/^#\s+(.+)$/)
+      
+      if (h3Match) {
+        const content = parseInlineMarkdown(h3Match[1])
+        processedLines.push(`<h3 class="text-base font-bold mt-3 mb-1.5" style="font-weight: 700; margin-top: 12px; margin-bottom: 6px;">${content}</h3>`)
+      } else if (h2Match) {
+        const content = parseInlineMarkdown(h2Match[1])
+        processedLines.push(`<h2 class="text-lg font-bold mt-4 mb-2" style="font-weight: 700; margin-top: 16px; margin-bottom: 8px;">${content}</h2>`)
+      } else if (h1Match) {
+        const content = parseInlineMarkdown(h1Match[1])
+        processedLines.push(`<h1 class="text-xl font-bold mt-4 mb-2" style="font-weight: 700; margin-top: 16px; margin-bottom: 8px;">${content}</h1>`)
+      } else if (processedLine) {
+        // Regular paragraph
+        processedLine = parseInlineMarkdown(processedLine)
+        processedLines.push(processedLine)
+      } else {
+        // Empty line
+        processedLines.push('')
+      }
     }
     
     // Close list at the end if still open
@@ -50,7 +67,32 @@ function parseMarkdown(text: string): string {
     }
   })
   
-  return processedLines.join('\n').replace(/\n/g, '<br />')
+  return processedLines.join('<br />')
+}
+
+// Parse inline markdown: links, bold, italic
+function parseInlineMarkdown(text: string): string {
+  let result = text
+  
+  // Links: [text](url) - MUST be done before bold/italic to preserve link text formatting
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+    // Allow bold/italic within link text
+    const formattedLinkText = linkText
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-700 underline font-medium" style="color: #0d9488; text-decoration: underline; cursor: pointer; font-weight: 500;">${formattedLinkText}</a>`
+  })
+  
+  // Bold: **text** or __text__ (but not if already inside a link)
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
+  result = result.replace(/__(.+?)__/g, '<strong style="font-weight: 700;">$1</strong>')
+  
+  // Italic: *text* or _text_ (but not if part of bold or link)
+  result = result.replace(/(?<!\*)\*(?!\*)([^\*]+?)\*(?!\*)/g, '<em>$1</em>')
+  result = result.replace(/(?<!_)_(?!_)([^_]+?)_(?!_)/g, '<em>$1</em>')
+  
+  return result
 }
 
 interface PageProps {
