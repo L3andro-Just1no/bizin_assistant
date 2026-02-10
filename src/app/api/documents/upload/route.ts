@@ -194,9 +194,9 @@ async function createDocumentEmbeddings(
   text: string
 ) {
   try {
-    // Split text into chunks (simple approach - in production use better chunking)
-    const chunkSize = 1000
-    const overlap = 200
+    // Split text into chunks with larger size to avoid cutting URLs
+    const chunkSize = 2000 // Increased from 1000 to avoid cutting long URLs
+    const overlap = 500    // Increased from 200 to ensure URLs are in at least one complete chunk
     const chunks: string[] = []
 
     for (let i = 0; i < text.length; i += chunkSize - overlap) {

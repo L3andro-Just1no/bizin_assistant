@@ -118,8 +118,8 @@ async function getKnowledgeContext(query: string): Promise<string | null> {
     // Search for similar documents using pgvector
     const { data: results, error } = await supabase.rpc('search_documents', {
       query_embedding: queryEmbedding,
-      match_threshold: 0.7,
-      match_count: 3,
+      match_threshold: 0.50,
+      match_count: 15,
     })
 
     if (error || !results || results.length === 0) {
