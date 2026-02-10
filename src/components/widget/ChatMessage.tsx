@@ -80,23 +80,41 @@ function parseMarkdown(text: string): string {
 function parseInlineMarkdown(text: string): string {
   let result = text
   
-  // Links: [text](url) - MUST be done before bold/italic to preserve link text formatting
+  // Step 1: Extract and convert links to HTML, store them with safe placeholders
+  const linkPlaceholders: { [key: string]: string } = {}
+  let placeholderIndex = 0
+  
   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
-    // Allow bold/italic within link text
+    // Process bold/italic in link text only
     const formattedLinkText = linkText
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
     
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-700 underline font-medium" style="color: #0d9488; text-decoration: underline; cursor: pointer; font-weight: 500;">${formattedLinkText}</a>`
+    // Create the full HTML link
+    const htmlLink = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-700 underline font-medium" style="color: #0d9488; text-decoration: underline; cursor: pointer; font-weight: 500;">${formattedLinkText}</a>`
+    
+    // Use placeholder that won't be touched by markdown processors (no *, _, etc)
+    const placeholder = `{{BIZINLINK${placeholderIndex}}}`
+    linkPlaceholders[placeholder] = htmlLink
+    placeholderIndex++
+    
+    return placeholder
   })
   
-  // Bold: **text** or __text__ (but not if already inside a link)
+  // Step 2: Process bold (on remaining text, excluding placeholders)
   result = result.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
   result = result.replace(/__(.+?)__/g, '<strong style="font-weight: 700;">$1</strong>')
   
-  // Italic: *text* or _text_ (but not if part of bold or link)
-  result = result.replace(/(?<!\*)\*(?!\*)([^\*]+?)\*(?!\*)/g, '<em>$1</em>')
-  result = result.replace(/(?<!_)_(?!_)([^_]+?)_(?!_)/g, '<em>$1</em>')
+  // Step 3: Process italic (avoiding already processed bold and placeholders)
+  // Only match single * or _ that are not part of ** or __ and not inside HTML tags
+  result = result.replace(/(?<!\*)\*(?!\*)([^\*<>]+?)\*(?!\*)/g, '<em>$1</em>')
+  result = result.replace(/(?<!_)_(?!_)([^_<>]+?)_(?!_)/g, '<em>$1</em>')
+  
+  // Step 4: Restore all link placeholders with actual HTML links
+  // Use global replace to ensure all instances are replaced
+  Object.keys(linkPlaceholders).forEach(placeholder => {
+    result = result.split(placeholder).join(linkPlaceholders[placeholder])
+  })
   
   return result
 }

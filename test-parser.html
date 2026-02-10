@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Markdown Parser</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .input-section, .output-section {
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .output {
+            padding: 20px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            min-height: 100px;
+        }
+        button {
+            background: #0d9488;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0f766e;
+        }
+        .label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🧪 Test Markdown Parser</h2>
+        
+        <div class="input-section">
+            <label class="label">Input (Markdown):</label>
+            <textarea id="input">To proceed with an investment consultation, you can use the following service:
+
+### [Consultoria de Investimento](https://checkout.stripe.com/c/pay/cs_live_a19eZVkKPgeeCTgMBkA9GNmnelnu9cBma9YtbWN9g2f0TWR4wr6NuWFZh8#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdkdWxOYHwnPyd1blppbHNgWlVVYDdcZkxUTzNUbmJnb3RvU05JYH1nZzU1SmNrN09jcWonKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmMT08NDdnJyknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl)
+
+This will help you get started with your investment planning in Portugal.</textarea>
+            <br><br>
+            <button onclick="parseText()">Parse ➜</button>
+        </div>
+        
+        <div class="output-section">
+            <label class="label">Output (HTML):</label>
+            <div id="output" class="output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Parse inline markdown: links, bold, italic
+        function parseInlineMarkdown(text) {
+            let result = text
+            
+            // Step 1: Extract and convert links to HTML, store them with safe placeholders
+            const linkPlaceholders = {}
+            let placeholderIndex = 0
+            
+            result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+                // Process bold/italic in link text only
+                const formattedLinkText = linkText
+                    .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                
+                // Create the full HTML link
+                const htmlLink = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-700 underline font-medium" style="color: #0d9488; text-decoration: underline; cursor: pointer; font-weight: 500;">${formattedLinkText}</a>`
+                
+                // Use placeholder that won't be touched by markdown processors
+                const placeholder = `{{BIZINLINK${placeholderIndex}}}`
+                linkPlaceholders[placeholder] = htmlLink
+                placeholderIndex++
+                
+                return placeholder
+            })
+            
+            // Step 2: Process bold (on remaining text, excluding placeholders)
+            result = result.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
+            result = result.replace(/__(.+?)__/g, '<strong style="font-weight: 700;">$1</strong>')
+            
+            // Step 3: Process italic (avoiding already processed bold and placeholders)
+            result = result.replace(/(?<!\*)\*(?!\*)([^\*<>]+?)\*(?!\*)/g, '<em>$1</em>')
+            result = result.replace(/(?<!_)_(?!_)([^_<>]+?)_(?!_)/g, '<em>$1</em>')
+            
+            // Step 4: Restore all link placeholders with actual HTML links
+            Object.keys(linkPlaceholders).forEach(placeholder => {
+                result = result.split(placeholder).join(linkPlaceholders[placeholder])
+            })
+            
+            return result
+        }
+
+        // Enhanced markdown parser with support for headings, links, and inline formatting
+        function parseMarkdown(text) {
+            const lines = text.split('\n')
+            let inList = false
+            const processedLines = []
+            
+            lines.forEach((line, index) => {
+                let processedLine = line.trim()
+                
+                // Check for bullet points first
+                const isBullet = /^[-*]\s+/.test(processedLine)
+                
+                if (isBullet) {
+                    if (!inList) {
+                        processedLines.push('<ul class="list-disc ml-4 my-2 space-y-1">')
+                        inList = true
+                    }
+                    let content = processedLine.replace(/^[-*]\s+/, '')
+                    content = parseInlineMarkdown(content)
+                    processedLines.push(`<li class="leading-relaxed">${content}</li>`)
+                } else {
+                    // Close list if we were in one
+                    if (inList) {
+                        processedLines.push('</ul>')
+                        inList = false
+                    }
+                    
+                    // Check for headings (###, ##, #)
+                    const h3Match = processedLine.match(/^###\s+(.+)$/)
+                    const h2Match = processedLine.match(/^##\s+(.+)$/)
+                    const h1Match = processedLine.match(/^#\s+(.+)$/)
+                    
+                    if (h3Match) {
+                        const content = parseInlineMarkdown(h3Match[1])
+                        processedLines.push(`<h3 class="text-base font-bold mt-3 mb-1.5 text-gray-900" style="font-weight: 700; margin-top: 12px; margin-bottom: 6px;">${content}</h3>`)
+                    } else if (h2Match) {
+                        const content = parseInlineMarkdown(h2Match[1])
+                        processedLines.push(`<h2 class="text-lg font-bold mt-4 mb-2 text-gray-900" style="font-weight: 700; margin-top: 16px; margin-bottom: 8px;">${content}</h2>`)
+                    } else if (h1Match) {
+                        const content = parseInlineMarkdown(h1Match[1])
+                        processedLines.push(`<h1 class="text-xl font-bold mt-4 mb-2 text-gray-900" style="font-weight: 700; margin-top: 16px; margin-bottom: 8px;">${content}</h1>`)
+                    } else if (processedLine) {
+                        // Regular paragraph
+                        processedLine = parseInlineMarkdown(processedLine)
+                        processedLines.push(processedLine)
+                    } else {
+                        // Empty line
+                        processedLines.push('')
+                    }
+                }
+                
+                // Close list at the end if still open
+                if (index === lines.length - 1 && inList) {
+                    processedLines.push('</ul>')
+                }
+            })
+            
+            return processedLines.join('<br />')
+        }
+
+        function parseText() {
+            const input = document.getElementById('input').value
+            const output = document.getElementById('output')
+            
+            console.log('Input:', input)
+            const parsed = parseMarkdown(input)
+            console.log('Parsed:', parsed)
+            
+            output.innerHTML = parsed
+        }
+        
+        // Auto-parse on load
+        window.onload = parseText
+    </script>
+</body>
+</html>
