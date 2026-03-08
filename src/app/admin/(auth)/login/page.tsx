@@ -61,18 +61,12 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mb-4">
-            <svg 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              className="w-7 h-7 text-white"
-              stroke="currentColor" 
-              strokeWidth="2"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <img
+              src="/logo.svg"
+              alt="Bizin Portugal"
+              className="h-10 w-auto"
+            />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
             Bizin Admin
@@ -94,7 +88,7 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@neomarca.pt"
+                placeholder="admin@bizin.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
