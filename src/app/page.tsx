@@ -7,18 +7,12 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center">
           {/* Logo */}
-          <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center mb-8">
-            <svg 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              className="w-12 h-12 text-white"
-              stroke="currentColor" 
-              strokeWidth="2"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
+          <div className="mx-auto mb-8 flex items-center justify-center">
+            <img 
+              src="/logo.svg" 
+              alt="Bizin Portugal" 
+              className="h-16 w-auto"
+            />
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
